@@ -173,3 +173,96 @@
   .preview-footer { align-items: flex-start; flex-direction: column; }
   .page-footer { flex-direction: column; gap: 7px; padding-top: 21px; }
 }
+
+
+/* Canvas renderer and Traditional Chinese UI */
+.language-pill {
+  border: 1px solid #e7dce9;
+  border-radius: 999px;
+  padding: 7px 11px;
+  color: #897492;
+  background: #fffafd;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.canvas-stage { padding: 30px; }
+.icon-canvas {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: min(100%, 420px);
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(83, 57, 76, .12);
+  background: transparent;
+}
+
+.layer-row-static { opacity: 1; cursor: default; }
+.layer-order-tag {
+  flex-shrink: 0;
+  color: #9b8c9c;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.manifest-panel {
+  margin-top: 19px;
+  padding: 15px;
+  border: 1px solid #f0e8ef;
+  border-radius: 11px;
+  background: #fffafd;
+}
+.manifest-panel h3 {
+  margin: 0 0 6px;
+  color: #574b5b;
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  font-weight: 500;
+}
+.manifest-panel > p {
+  margin: 0 0 12px;
+  color: #9b8c9c;
+  font-size: 10px;
+  line-height: 1.6;
+}
+.asset-count-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+.asset-count {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  background: #f8f2f7;
+  color: #88788c;
+  font-size: 10px;
+}
+.asset-count strong { color: #785c83; font-size: 13px; }
+
+.warning-panel, .error-panel {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 11px;
+  font-size: 11px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.warning-panel { border: 1px solid #eedeb9; background: #fff9e9; color: #79643a; }
+.error-panel { border: 1px solid #efcaca; background: #fff3f3; color: #8b4242; }
+.warning-panel strong, .error-panel strong { font-size: 12px; }
+.warning-panel p, .error-panel p { margin: 6px 0; }
+.warning-panel ul { margin: 7px 0 0; padding-left: 18px; }
+.warning-panel code { font-size: 10px; }
+
+@media (max-width: 540px) {
+  .language-pill { font-size: 10px; padding: 6px 8px; }
+  .canvas-stage { min-height: 0; padding: 22px; }
+  .icon-canvas { width: 100%; }
+  .layer-order-tag { font-size: 8px; }
+}
