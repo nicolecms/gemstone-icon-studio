@@ -23,7 +23,7 @@ type AssetDefinition = {
 function numberedAssets({ folder, count, labels, filenamePrefix }: AssetDefinition): AssetVariant[] {
   return Array.from({ length: count }, (_, index) => {
     const number = String(index + 1).padStart(2, '0')
-    const filename = `${'${'}filenamePrefix ?? folder}${'${'}'-'}${'${'}number}.png`
+    const filename = `${filenamePrefix ?? folder.split('/').at(-1)}-${number}.png`
     return {
       id: `${folder}-${number}`,
       label: labels[index] ?? `${folder} ${index + 1}`,
