@@ -19,14 +19,14 @@ npm run build
 
 程式目前預期素材路徑如下（路徑與檔名大小寫需完全相符）：
 
-- `public/assets/options/jewel/jewel-01.png` 至 `jewel-14.png`
-- `public/assets/live-preview/jewel/jewel-01.png` 至 `jewel-14.png`
-- `ribbon/ribbon-01.png` 至 `ribbon-14.png`
-- `character/character-01.png` 至 `character-07.png`
-- `frame-metal/frame-metal-01.png` 至 `frame-metal-03.png`
-- `frame-primary/frame-primary-01.png` 至 `frame-primary-14.png`
-- `frame-secondary/frame-secondary-01.png` 至 `frame-secondary-02.png` (只需 live-preview)
-- `pattern/pattern-01.png` 至 `pattern-02.png`
+- `public/assets/options/jewel/jewel_1.png` 至 `jewel_14.png`
+- `public/assets/live-preview/jewel/jewel_1.png` 至 `jewel_14.png`
+- `ribbon/ribbon_1.png` 至 `ribbon_14.png`
+- `character/character_1.png` 至 `character_7.png`
+- `frame-metal/frame-metal_1.png` 至 `frame-metal_3.png`
+- `frame-primary/frame-primary_1.png` 至 `frame-primary_14.png`
+- `frame-secondary/frame-secondary_1.png` 至 `frame-secondary_2.png` (只需 live-preview)
+- `background/background_1.png` 至 `background_2.png`
 
 以上路徑反映目前程式中的命名慣例。若你上傳的實際檔名或子資料夾不同，請在 `src/data/assetManifest.ts` 調整對應路徑；網站會對無法載入的素材顯示提示。背景純色與次要框顏色使用程式內的色碼／按鈕，不需要 options 圖片。
 
