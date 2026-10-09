@@ -1,7 +1,25 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { assetManifest, defaultSelections, layerOrderBottomToTop } from './data/assetManifest'
+import {
+  assetManifest,
+  defaultSelections,
+  layerOrderBottomToTop,
+  type AssetVariant,
+} from './data/assetManifest'
 import { renderIcon, type RenderConfig } from './engine/renderIcon'
 import './App.css'
+
+type SelectableLayer = 'jewel' | 'ribbon' | 'character' | 'metal' | 'secondary' | 'primary' | 'pattern'
+type SelectionState = {
+  jewel: AssetVariant
+  ribbon: AssetVariant
+  character: AssetVariant
+  metal: AssetVariant
+  secondary: AssetVariant
+  primary: AssetVariant
+  pattern: AssetVariant
+  colour: (typeof assetManifest.colours)[number]
+}
+type VisibilityState = Record<SelectableLayer, boolean>
 
 const layerLabels: Record<(typeof layerOrderBottomToTop)[number], string> = {
   colour: '純色背景',
@@ -15,29 +33,43 @@ const layerLabels: Record<(typeof layerOrderBottomToTop)[number], string> = {
   jewel: '寶石',
 }
 
+const pickerSections: { key: SelectableLayer; title: string; hint: string }[] = [
+  { key: 'jewel', title: '寶石', hint: '選擇你的生日寶石' },
+  { key: 'ribbon', title: '絲帶', hint: '配搭同款寶石色系' },
+  { key: 'character', title: '角色', hint: '選擇喜歡的角色' },
+  { key: 'metal', title: '金屬框', hint: '金、銀或銅' },
+  { key: 'secondary', title: '次要框', hint: '白色或黑色' },
+  { key: 'primary', title: '主要框', hint: '選擇主要框的寶石款式' },
+  { key: 'pattern', title: '背景圖案', hint: '可關閉圖案，只保留純色' },
+]
+
 function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [selections, setSelections] = useState<SelectionState>(defaultSelections)
+  const [visible, setVisible] = useState<VisibilityState>({
+    jewel: true,
+    ribbon: true,
+    character: true,
+    metal: true,
+    secondary: true,
+    primary: true,
+    pattern: true,
+  })
   const [assetErrors, setAssetErrors] = useState<string[]>([])
   const [renderError, setRenderError] = useState('')
   const [isRendering, setIsRendering] = useState(true)
 
   const config = useMemo<RenderConfig>(() => ({
-    colour: defaultSelections.colour,
-    pattern: defaultSelections.pattern,
-    photo: {
-      image: null,
-      zoom: 1,
-      rotation: 0,
-      offsetX: 0,
-      offsetY: 0,
-    },
-    metal: defaultSelections.metal,
-    secondary: defaultSelections.secondary,
-    primary: defaultSelections.primary,
-    character: defaultSelections.character,
-    ribbon: defaultSelections.ribbon,
-    jewel: defaultSelections.jewel,
-  }), [])
+    colour: selections.colour,
+    pattern: visible.pattern ? selections.pattern : null,
+    photo: { image: null, zoom: 1, rotation: 0, offsetX: 0, offsetY: 0 },
+    metal: visible.metal ? selections.metal : null,
+    secondary: visible.secondary ? selections.secondary : null,
+    primary: visible.primary ? selections.primary : null,
+    character: visible.character ? selections.character : null,
+    ribbon: visible.ribbon ? selections.ribbon : null,
+    jewel: visible.jewel ? selections.jewel : null,
+  }), [selections, visible])
 
   const handleAssetError = useCallback((src: string) => {
     setAssetErrors((current) => current.includes(src) ? current : [...current, src])
@@ -66,21 +98,18 @@ function App() {
         if (!cancelled) setIsRendering(false)
       })
 
-    return () => {
-      cancelled = true
-    }
+    return () => { cancelled = true }
   }, [config, handleAssetError])
 
-  const assetCounts = [
-    { label: '寶石', count: assetManifest.jewel.length },
-    { label: '絲帶', count: assetManifest.ribbon.length },
-    { label: '角色', count: assetManifest.character.length },
-    { label: '金屬框', count: assetManifest.metal.length },
-    { label: '次要框', count: assetManifest.secondary.length },
-    { label: '主要框', count: assetManifest.primary.length },
-    { label: '背景圖案', count: assetManifest.pattern.length },
-    { label: '純色背景', count: assetManifest.colours.length },
-  ]
+  const chooseAsset = (layer: SelectableLayer, asset: AssetVariant) => {
+    setSelections((current) => ({ ...current, [layer]: asset }))
+  }
+
+  const toggleLayer = (layer: SelectableLayer) => {
+    setVisible((current) => ({ ...current, [layer]: !current[layer] }))
+  }
+
+  const selectedAsset = (layer: SelectableLayer) => selections[layer]
 
   return (
     <main className="studio" lang="zh-Hant">
@@ -96,7 +125,7 @@ function App() {
       <section className="intro">
         <p className="eyebrow">你的圖示，由你創作</p>
         <h1>為日常添一點<span>寶石魔法。</span></h1>
-        <p className="intro-copy">從每一個小細節開始，打造獨一無二的個人圖示。</p>
+        <p className="intro-copy">選擇喜歡的寶石、角色與配色，即時預覽你的專屬圖示。</p>
       </section>
 
       <section className="editor" aria-label="圖示自訂工作區">
@@ -106,88 +135,121 @@ function App() {
               <p className="eyebrow">即時預覽</p>
               <h2>你的專屬寶石</h2>
             </div>
-            <span className="draft-pill"><span />{isRendering ? '繪製中' : '預覽畫布'}</span>
+            <span className="draft-pill"><span />{isRendering ? '更新中' : '即時預覽'}</span>
           </div>
 
           <div className="preview-stage canvas-stage">
             <div className="preview-halo halo-one" />
             <div className="preview-halo halo-two" />
-            <canvas
-              ref={canvasRef}
-              className="icon-canvas"
-              width={1024}
-              height={1024}
-              aria-label="寶石圖示畫布預覽"
-            />
+            <canvas ref={canvasRef} className="icon-canvas" width={1024} height={1024} aria-label="寶石圖示畫布預覽" />
           </div>
 
           <div className="preview-footer">
-            <span><span className="status-dot" />{isRendering ? '正在繪製圖層…' : '畫布已完成繪製'}</span>
-            <span>預計匯出尺寸：1024 × 1024 px</span>
+            <span><span className="status-dot" />{isRendering ? '正在更新圖層…' : '所有選擇已反映於預覽'}</span>
+            <span>畫布尺寸：1024 × 1024 px</span>
           </div>
 
-          {renderError && (
-            <div className="error-panel" role="alert">
-              <strong>無法繪製畫布</strong>
-              <p>{renderError}</p>
+          {renderError && <div className="error-panel" role="alert"><strong>無法繪製畫布</strong><p>{renderError}</p></div>}
+          {assetErrors.length > 0 && (
+            <div className="warning-panel" role="status">
+              <strong>有 {assetErrors.length} 個素材無法載入</strong>
+              <p>請確認檔案存在於下列路徑，並且檔名大小寫一致。其餘圖層仍會繼續繪製。</p>
+              <ul>{assetErrors.slice(0, 6).map((src) => <li key={src}><code>{src}</code></li>)}</ul>
+              {assetErrors.length > 6 && <p>另有 {assetErrors.length - 6} 個素材未能載入。</p>}
             </div>
           )}
 
-          {assetErrors.length > 0 && (
-            <div className="warning-panel" role="status">
-              <strong>部分素材尚未載入（{assetErrors.length}）</strong>
-              <p>目前素材資料夾尚未放入對應圖片，因此畫布會先顯示背景與示意照片。請依照下方路徑加入素材；其餘圖層仍會繼續繪製。</p>
-              <ul>
-                {assetErrors.slice(0, 5).map((src) => <li key={src}><code>{src}</code></li>)}
-              </ul>
-              {assetErrors.length > 5 && <p>另有 {assetErrors.length - 5} 個素材路徑未能載入。</p>}
+          <section className="manifest-panel visibility-panel">
+            <div className="section-heading">
+              <div><h3>裝飾圖層</h3><p>關閉不需要的元素，預覽會即時更新。</p></div>
             </div>
-          )}
+            <div className="visibility-grid">
+              {pickerSections.map(({ key, title }) => (
+                <label className="visibility-toggle" key={key}>
+                  <input type="checkbox" checked={visible[key]} onChange={() => toggleLayer(key)} />
+                  <span className="toggle-track" aria-hidden="true"><span /></span>
+                  <span>{title}</span>
+                </label>
+              ))}
+            </div>
+            <p className="visibility-note">照片與純色背景固定顯示；背景圖案及其他裝飾可獨立開關。</p>
+          </section>
         </div>
 
         <aside className="controls-column">
           <div className="section-heading controls-heading">
-            <div>
-              <p className="eyebrow">素材設定</p>
-              <h2>圖層清單</h2>
-            </div>
-            <span className="step-count">共 9 層</span>
+            <div><p className="eyebrow">自訂你的圖示</p><h2>選擇素材</h2></div>
+            <span className="step-count">8 款設定</span>
           </div>
+          <p className="panel-intro">點選縮圖即可更新左側預覽。金屬框、次要框及主要框會按順序疊加顯示。</p>
 
-          <p className="panel-intro">目前先使用每個圖層的第一款預設素材。下一階段會加入素材選擇與照片編輯功能。</p>
-
-          <div className="layer-list">
-            {layerOrderBottomToTop.map((layer, index) => (
-              <div className="layer-row layer-row-static" key={layer}>
-                <span className={`layer-number ${index === layerOrderBottomToTop.length - 1 ? 'layer-number-active' : ''}`}>
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <span className="layer-copy">
-                  <span className="layer-label">{layerLabels[layer]}</span>
-                  <span className="layer-detail">
-                    {layer === 'colour' ? defaultSelections.colour.label
-                      : layer === 'pattern' ? defaultSelections.pattern.label
-                      : layer === 'photo' ? '示意照片 · 圓形裁切'
-                      : defaultSelections[layer].label}
-                  </span>
-                </span>
-                <span className="layer-order-tag">{index === 0 ? '底層' : index === layerOrderBottomToTop.length - 1 ? '頂層' : `第 ${index + 1} 層`}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="manifest-panel">
-            <h3>素材清單</h3>
-            <p>目前已在程式中設定的素材數量：</p>
-            <div className="asset-count-grid">
-              {assetCounts.map((item) => (
-                <div className="asset-count" key={item.label}>
-                  <span>{item.label}</span>
-                  <strong>{item.count}</strong>
-                </div>
+          <section className="picker-section">
+            <div className="picker-title-row"><h3>純色背景</h3><span>{selections.colour.value.toUpperCase()}</span></div>
+            <div className="colour-grid" role="group" aria-label="選擇純色背景">
+              {assetManifest.colours.map((colour) => (
+                <button
+                  type="button"
+                  key={colour.id}
+                  className={`colour-swatch ${selections.colour.id === colour.id ? 'is-selected' : ''}`}
+                  style={{ '--swatch': colour.value } as React.CSSProperties}
+                  onClick={() => setSelections((current) => ({ ...current, colour }))}
+                  aria-label={`${colour.label} ${colour.value}`}
+                  aria-pressed={selections.colour.id === colour.id}
+                  title={`${colour.label} · ${colour.value}`}
+                ><span /></button>
               ))}
             </div>
-          </div>
+          </section>
+
+          {pickerSections.map(({ key, title, hint }) => {
+            const variants = assetManifest[key === 'pattern' ? 'pattern' : key]
+            return (
+              <section className="picker-section" key={key}>
+                <div className="picker-title-row">
+                  <div><h3>{title}</h3><p>{hint}</p></div>
+                  <label className="mini-toggle" title={visible[key] ? `隱藏${title}` : `顯示${title}`}>
+                    <input type="checkbox" checked={visible[key]} onChange={() => toggleLayer(key)} />
+                    <span>{visible[key] ? '顯示' : '隱藏'}</span>
+                  </label>
+                </div>
+                {key === 'secondary' ? (
+                  <div className="secondary-options" role="group" aria-label="選擇次要框顏色">
+                    {assetManifest.secondary.map((asset, index) => (
+                      <button
+                        type="button"
+                        key={asset.id}
+                        className={`secondary-option ${selections.secondary.id === asset.id ? 'is-selected' : ''}`}
+                        onClick={() => chooseAsset('secondary', asset)}
+                        aria-pressed={selections.secondary.id === asset.id}
+                      >
+                        <span className={`secondary-swatch ${index === 0 ? 'swatch-white' : 'swatch-black'}`} />
+                        <span>{asset.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="asset-grid" role="group" aria-label={`選擇${title}`}>
+                    {variants.map((asset) => (
+                      <button
+                        type="button"
+                        key={asset.id}
+                        className={`asset-option ${selectedAsset(key).id === asset.id ? 'is-selected' : ''}`}
+                        onClick={() => chooseAsset(key, asset)}
+                        aria-pressed={selectedAsset(key).id === asset.id}
+                        title={asset.label}
+                      >
+                        <span className="asset-thumb">
+                          <img src={asset.optionSrc} alt="" loading="lazy" onError={(event) => { event.currentTarget.style.opacity = '0' }} />
+                          <span className="asset-thumb-fallback" aria-hidden="true">✧</span>
+                        </span>
+                        <span className="asset-option-label">{asset.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </section>
+            )
+          })}
         </aside>
       </section>
 
