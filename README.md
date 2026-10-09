@@ -19,14 +19,11 @@ npm run build
 
 程式目前預期素材路徑如下（路徑與檔名大小寫需完全相符）：
 
-- `public/assets/options/jewel/jewel_1.png` 至 `jewel_14.png`
-- `public/assets/live-preview/jewel/jewel_1.png` 至 `jewel_14.png`
-- `ribbon/ribbon_1.png` 至 `ribbon_14.png`
-- `character/character_1.png` 至 `character_7.png`
-- `frame-metal/frame-metal_1.png` 至 `frame-metal_3.png`
-- `frame-primary/frame-primary_1.png` 至 `frame-primary_14.png`
-- `frame-secondary/frame-secondary_1.png` 至 `frame-secondary_2.png` (只需 live-preview)
-- `background/background_1.png` 至 `background_2.png`
+- 選項縮圖：`options/jewel/jewel_1.png` 至 `_14.png`；`options/ribbon/ribbon_1.png` 至 `_14.png`；`options/character/character_1.png` 至 `_7.png`；`options/frame-metal/frame-metal_1.png` 至 `_3.png`；`options/frame-primary/frame-primary_1.png` 至 `_14.png`；`options/pattern/pattern_1.png` 至 `_2.png`
+- Canvas 素材：`live-preview/jewel/jewel_1.PNG` 至 `_14.PNG`；`live-preview/ribbon/ribbon_1.PNG` 至 `_14.PNG`；`live-preview/character/character_1.PNG` 至 `_7.PNG`；`live-preview/frame-metal/frame-metal_1.PNG` 至 `_3.PNG`；`live-preview/frame-primary/frame-primary_1.PNG` 至 `_14.PNG`；`live-preview/pattern/pattern_1.PNG` 至 `_2.PNG`
+- 次要框沒有獨立的 options 縮圖；其選項來源沿用 `live-preview/frame-secondary/frame-secondary_1.PNG` 至 `_2.PNG`
+
+以上路徑皆相對於 `public/assets/`。主要框第 11 張選項縮圖的副檔名是大寫 `.PNG`，其餘選項縮圖是小寫 `.png`。
 
 以上路徑反映目前程式中的命名慣例。若你上傳的實際檔名或子資料夾不同，請在 `src/data/assetManifest.ts` 調整對應路徑；網站會對無法載入的素材顯示提示。背景純色與次要框顏色使用程式內的色碼／按鈕，不需要 options 圖片。
 
