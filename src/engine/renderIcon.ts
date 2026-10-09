@@ -12,12 +12,12 @@ export type RenderConfig = {
   colour: ColourVariant
   pattern: AssetVariant | null
   photo: PhotoTransform
-  metal: AssetVariant
-  secondary: AssetVariant
-  primary: AssetVariant
-  character: AssetVariant
-  ribbon: AssetVariant
-  jewel: AssetVariant
+  metal: AssetVariant | null
+  secondary: AssetVariant | null
+  primary: AssetVariant | null
+  character: AssetVariant | null
+  ribbon: AssetVariant | null
+  jewel: AssetVariant | null
 }
 
 export type RenderOptions = {
@@ -27,51 +27,41 @@ export type RenderOptions = {
 }
 
 const imageCache = new Map<string, HTMLImageElement>()
-const failedAssets = new Set<string>()
 const SIZE = 1024
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   const cached = imageCache.get(src)
   if (cached?.complete && cached.naturalWidth > 0) return Promise.resolve(cached)
+  if (cached?.complete && cached.naturalWidth === 0) imageCache.delete(src)
 
   return new Promise((resolve, reject) => {
-    const image = cached ?? new Image()
+    const image = new Image()
     image.onload = () => {
-      if (image.naturalWidth > 0) {
+      if (image.naturalWidth > 0 && image.naturalHeight > 0) {
         imageCache.set(src, image)
-        failedAssets.delete(src)
         resolve(image)
       } else {
+        imageCache.delete(src)
         reject(new Error(`圖片沒有有效尺寸：${src}`))
       }
     }
     image.onerror = () => {
-      failedAssets.add(src)
+      imageCache.delete(src)
       reject(new Error(`無法載入素材：${src}`))
     }
-    if (!cached) {
-      image.decoding = 'async'
-      image.src = src
-      imageCache.set(src, image)
-    } else if (cached.complete) {
-      reject(new Error(`無法載入素材：${src}`))
-    }
+    image.decoding = 'async'
+    image.src = src
+    imageCache.set(src, image)
   })
 }
 
 function drawPlaceholderPhoto(ctx: CanvasRenderingContext2D, cx: number, cy: number, radius: number) {
-  ctx.save()
-  ctx.beginPath()
-  ctx.arc(cx, cy, radius, 0, Math.PI * 2)
-  ctx.clip()
-
   const gradient = ctx.createLinearGradient(cx - radius, cy - radius, cx + radius, cy + radius)
   gradient.addColorStop(0, '#F9EAF1')
   gradient.addColorStop(1, '#DCCBEA')
   ctx.fillStyle = gradient
   ctx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2)
 
-  // A simple illustrated placeholder portrait, generated locally on Canvas.
   ctx.fillStyle = '#B58CA7'
   ctx.beginPath()
   ctx.ellipse(cx, cy - radius * 0.2, radius * 0.28, radius * 0.34, 0, 0, Math.PI * 2)
@@ -84,13 +74,12 @@ function drawPlaceholderPhoto(ctx: CanvasRenderingContext2D, cx: number, cy: num
   ctx.font = '500 25px sans-serif'
   ctx.textAlign = 'center'
   ctx.fillText('預覽照片', cx, cy + radius * 0.86)
-  ctx.restore()
 }
 
 function drawPhoto(ctx: CanvasRenderingContext2D, photo: PhotoTransform) {
   const cx = SIZE / 2
   const cy = SIZE / 2
-  // Adjust this radius after checking the transparent opening in the real frame assets.
+  // Tune this radius to the transparent aperture in the supplied frame artwork.
   const radius = SIZE * 0.315
 
   ctx.save()
@@ -121,15 +110,19 @@ async function drawAsset(
 ) {
   if (!asset) return
   try {
-    const image = await loadImage(asset.src)
-    // Every layer shares a 1024 × 1024 coordinate space, preserving alignment.
+    const image = await loadImage(asset.previewSrc)
+    // All full-size layer assets share the same 1024 × 1024 canvas coordinates.
     ctx.drawImage(image, 0, 0, SIZE, SIZE)
   } catch (error) {
-    onAssetError?.(asset.src, error)
-    // Continue rendering the remaining layers if an asset is missing.
+    onAssetError?.(asset.previewSrc, error)
+    // A missing layer must not prevent the rest of the composition from rendering.
   }
 }
 
+/**
+ * Draws the icon from bottom to top. The UI only supplies a config; rendering
+ * and asset-loading concerns stay isolated in this module.
+ */
 export async function renderIcon(
   canvas: HTMLCanvasElement,
   config: RenderConfig,
@@ -150,9 +143,7 @@ export async function renderIcon(
   if (includeBackground) {
     ctx.fillStyle = config.colour.value
     ctx.fillRect(0, 0, SIZE, SIZE)
-    if (config.pattern) {
-      await drawAsset(ctx, config.pattern, options.onAssetError)
-    }
+    await drawAsset(ctx, config.pattern, options.onAssetError)
   }
 
   drawPhoto(ctx, config.photo)
@@ -163,8 +154,4 @@ export async function renderIcon(
   await drawAsset(ctx, config.ribbon, options.onAssetError)
   await drawAsset(ctx, config.jewel, options.onAssetError)
   ctx.restore()
-}
-
-export function getFailedAssets() {
-  return Array.from(failedAssets)
 }
