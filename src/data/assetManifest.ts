@@ -33,14 +33,13 @@ function numberedAssets({
   optionFolder,
   previewFolder,
   optionExtension = '.png',
-  optionExtensionOverrides = {},
   previewExtension = '.PNG',
   usePreviewAsOption = false,
 }: AssetDefinition): AssetVariant[] {
   return Array.from({ length: count }, (_, index) => {
     const number = index + 1
     const baseName = `${filenamePrefix ?? folder.split('/').at(-1)}_${number}`
-    const optionFilename = `${baseName}${optionExtensionOverrides[number] ?? optionExtension}`
+    const optionFilename = `${baseName}${optionExtension}`
     const previewFilename = `${baseName}${previewExtension}`
     return {
       id: `${folder}-${number}`,
