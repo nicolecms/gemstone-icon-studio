@@ -1,7 +1,10 @@
 export type AssetVariant = {
   id: string
   label: string
-  src: string
+  /** Thumbnail used by the option picker. */
+  optionSrc: string
+  /** Full-size transparent artwork used by the Canvas renderer. */
+  previewSrc: string
 }
 
 export type ColourVariant = {
@@ -10,58 +13,62 @@ export type ColourVariant = {
   value: string
 }
 
-/**
- * Asset paths are relative to /public. Replace these predictable filenames
- * with your real asset filenames when you add the artwork.
- */
-const numberedAssets = (
-  prefix: string,
-  count: number,
-  label: string,
-): AssetVariant[] =>
-  Array.from({ length: count }, (_, index) => {
+type AssetDefinition = {
+  folder: string
+  count: number
+  labels: string[]
+}
+
+function numberedAssets({ folder, count, labels }: AssetDefinition): AssetVariant[] {
+  return Array.from({ length: count }, (_, index) => {
     const number = String(index + 1).padStart(2, '0')
+    const filename = `${folder}-${number}.png`
     return {
-      id: `${prefix}-${number}`,
-      label: `${label} ${index + 1}`,
-      src: `/assets/${prefix}/${prefix}-${number}.png`,
+      id: `${folder}-${number}`,
+      label: labels[index] ?? `${folder} ${index + 1}`,
+      optionSrc: `/assets/options/${folder}/${filename}`,
+      previewSrc: `/assets/live-preview/${folder}/${filename}`,
     }
   })
+}
+
+const gemstoneNames = [
+  '石榴石', '紫水晶', '海藍寶石', '鑽石', '祖母綠', '珍珠', '紅寶石',
+  '橄欖石', '藍寶石', '蛋白石', '黃水晶', '綠松石', '白水晶', '黑曜石',
+]
 
 export const assetManifest = {
-  jewel: numberedAssets('jewel', 14, '寶石'),
-  ribbon: numberedAssets('ribbon', 14, '絲帶'),
-  character: numberedAssets('character', 7, '角色'),
-  metal: numberedAssets('metal', 3, '金屬框'),
-  secondary: numberedAssets('secondary', 2, '次要框'),
-  primary: numberedAssets('primary', 14, '主要框'),
-  pattern: numberedAssets('pattern', 2, '背景圖案'),
+  jewel: numberedAssets({ folder: 'jewel', count: 14, labels: gemstoneNames }),
+  ribbon: numberedAssets({ folder: 'ribbon', count: 14, labels: gemstoneNames }),
+  character: numberedAssets({
+    folder: 'character',
+    count: 7,
+    labels: ['鍾明B', '熊熊', '大紫眼', '灰藍B', 'Miss Bunny', '藍企企', '？？？'],
+  }),
+  metal: numberedAssets({ folder: 'frame-metal', count: 3, labels: ['金', '銀', '銅'] }),
+  secondary: numberedAssets({ folder: 'frame-secondary', count: 2, labels: ['白色', '黑色'] }),
+  primary: numberedAssets({ folder: 'frame-primary', count: 14, labels: gemstoneNames }),
+  pattern: numberedAssets({ folder: 'pattern', count: 2, labels: ['圖案 1', '圖案 2'] }),
   colours: [
-    { id: 'colour-01', label: '玫瑰粉', value: '#F3DCE5' },
-    { id: 'colour-02', label: '薰衣草紫', value: '#E6DDF4' },
-    { id: 'colour-03', label: '天空藍', value: '#DCECF8' },
-    { id: 'colour-04', label: '薄荷綠', value: '#DCEFE5' },
-    { id: 'colour-05', label: '奶油黃', value: '#F7EBC8' },
-    { id: 'colour-06', label: '蜜桃橘', value: '#F8E0D2' },
-    { id: 'colour-07', label: '珍珠白', value: '#F7F3EF' },
-    { id: 'colour-08', label: '莓果紅', value: '#EBCBD8' },
-    { id: 'colour-09', label: '霧霾藍', value: '#D4DFEF' },
-    { id: 'colour-10', label: '鼠尾草綠', value: '#D8E3D2' },
-    { id: 'colour-11', label: '香檳金', value: '#F1E0B8' },
-    { id: 'colour-12', label: '淡丁香紫', value: '#E9D7EA' },
-    { id: 'colour-13', label: '櫻花粉', value: '#F7E3EA' },
-    { id: 'colour-14', label: '深海藍', value: '#D5E5EA' },
+    { id: 'colour-01', label: '石榴粉', value: '#F4D7E8' },
+    { id: 'colour-02', label: '紫水晶', value: '#DAC8EC' },
+    { id: 'colour-03', label: '海藍', value: '#BADAE4' },
+    { id: 'colour-04', label: '藍紫', value: '#B9C0DF' },
+    { id: 'colour-05', label: '翡翠綠', value: '#BBDECA' },
+    { id: 'colour-06', label: '沙棕', value: '#E0D2BE' },
+    { id: 'colour-07', label: '珊瑚粉', value: '#F4D9D7' },
+    { id: 'colour-08', label: '橄欖綠', value: '#CDDBB0' },
+    { id: 'colour-09', label: '藍寶石', value: '#C5D3EA' },
+    { id: 'colour-10', label: '灰丁香', value: '#D7D1DF' },
+    { id: 'colour-11', label: '黃水晶', value: '#F8E3AF' },
+    { id: 'colour-12', label: '綠松石', value: '#A5D6D3' },
+    { id: 'colour-13', label: '銀灰', value: '#D2D2D2' },
+    { id: 'colour-14', label: '曜石灰', value: '#8B8B8B' },
   ] satisfies ColourVariant[],
 } as const
 
-export type AssetLayerName =
-  | 'jewel'
-  | 'ribbon'
-  | 'character'
-  | 'metal'
-  | 'secondary'
-  | 'primary'
-  | 'pattern'
+export type AssetLayerName = 'jewel' | 'ribbon' | 'character' | 'metal' | 'secondary' | 'primary' | 'pattern'
+export type DecorationLayerName = Exclude<AssetLayerName, 'pattern'>
 
 export const defaultSelections = {
   jewel: assetManifest.jewel[0],
@@ -75,13 +82,5 @@ export const defaultSelections = {
 }
 
 export const layerOrderBottomToTop = [
-  'colour',
-  'pattern',
-  'photo',
-  'metal',
-  'secondary',
-  'primary',
-  'character',
-  'ribbon',
-  'jewel',
+  'colour', 'pattern', 'photo', 'metal', 'secondary', 'primary', 'character', 'ribbon', 'jewel',
 ] as const
