@@ -24,6 +24,7 @@ export type RenderOptions = {
   size?: number
   includeBackground?: boolean
   onAssetError?: (src: string, error: unknown) => void
+  shouldCancel?: () => boolean
 }
 
 const imageCache = new Map<string, HTMLImageElement>()
@@ -106,15 +107,16 @@ function drawPhoto(ctx: CanvasRenderingContext2D, photo: PhotoTransform) {
 async function drawAsset(
   ctx: CanvasRenderingContext2D,
   asset: AssetVariant | null,
-  onAssetError?: RenderOptions['onAssetError'],
+  options: RenderOptions,
 ) {
-  if (!asset) return
+  if (!asset || options.shouldCancel?.()) return
   try {
     const image = await loadImage(asset.previewSrc)
+    if (options.shouldCancel?.()) return
     // All full-size layer assets share the same 1024 × 1024 canvas coordinates.
     ctx.drawImage(image, 0, 0, SIZE, SIZE)
   } catch (error) {
-    onAssetError?.(asset.previewSrc, error)
+    options.onAssetError?.(asset.previewSrc, error)
     // A missing layer must not prevent the rest of the composition from rendering.
   }
 }
@@ -140,18 +142,26 @@ export async function renderIcon(
   ctx.save()
   ctx.scale(size / SIZE, size / SIZE)
 
+  if (options.shouldCancel?.()) { ctx.restore(); return }
+
   if (includeBackground) {
     ctx.fillStyle = config.colour.value
     ctx.fillRect(0, 0, SIZE, SIZE)
-    await drawAsset(ctx, config.pattern, options.onAssetError)
+    await drawAsset(ctx, config.pattern, options)
+    if (options.shouldCancel?.()) { ctx.restore(); return }
   }
 
   drawPhoto(ctx, config.photo)
-  await drawAsset(ctx, config.metal, options.onAssetError)
-  await drawAsset(ctx, config.secondary, options.onAssetError)
-  await drawAsset(ctx, config.primary, options.onAssetError)
-  await drawAsset(ctx, config.character, options.onAssetError)
-  await drawAsset(ctx, config.ribbon, options.onAssetError)
-  await drawAsset(ctx, config.jewel, options.onAssetError)
+  await drawAsset(ctx, config.metal, options)
+  if (options.shouldCancel?.()) { ctx.restore(); return }
+  await drawAsset(ctx, config.secondary, options)
+  if (options.shouldCancel?.()) { ctx.restore(); return }
+  await drawAsset(ctx, config.primary, options)
+  if (options.shouldCancel?.()) { ctx.restore(); return }
+  await drawAsset(ctx, config.character, options)
+  if (options.shouldCancel?.()) { ctx.restore(); return }
+  await drawAsset(ctx, config.ribbon, options)
+  if (options.shouldCancel?.()) { ctx.restore(); return }
+  await drawAsset(ctx, config.jewel, options)
   ctx.restore()
 }
