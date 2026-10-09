@@ -17,12 +17,13 @@ type AssetDefinition = {
   folder: string
   count: number
   labels: string[]
+  filenamePrefix?: string
 }
 
-function numberedAssets({ folder, count, labels }: AssetDefinition): AssetVariant[] {
+function numberedAssets({ folder, count, labels, filenamePrefix }: AssetDefinition): AssetVariant[] {
   return Array.from({ length: count }, (_, index) => {
     const number = String(index + 1).padStart(2, '0')
-    const filename = `${folder}-${number}.png`
+    const filename = `${'${'}filenamePrefix ?? folder}${'${'}'-'}${'${'}number}.png`
     return {
       id: `${folder}-${number}`,
       label: labels[index] ?? `${folder} ${index + 1}`,
@@ -48,7 +49,7 @@ export const assetManifest = {
   metal: numberedAssets({ folder: 'frame-metal', count: 3, labels: ['金', '銀', '銅'] }),
   secondary: numberedAssets({ folder: 'frame-secondary', count: 2, labels: ['白色', '黑色'] }),
   primary: numberedAssets({ folder: 'frame-primary', count: 14, labels: gemstoneNames }),
-  pattern: numberedAssets({ folder: 'pattern', count: 2, labels: ['圖案 1', '圖案 2'] }),
+  pattern: numberedAssets({ folder: 'background/pattern', filenamePrefix: 'pattern', count: 2, labels: ['圖案 1', '圖案 2'] }),
   colours: [
     { id: 'colour-01', label: '石榴粉', value: '#F4D7E8' },
     { id: 'colour-02', label: '紫水晶', value: '#DAC8EC' },
