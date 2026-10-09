@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import {
   assetManifest,
   defaultSelections,
@@ -191,7 +191,7 @@ function App() {
                   type="button"
                   key={colour.id}
                   className={`colour-swatch ${selections.colour.id === colour.id ? 'is-selected' : ''}`}
-                  style={{ '--swatch': colour.value } as React.CSSProperties}
+                  style={{ '--swatch': colour.value } as CSSProperties}
                   onClick={() => setSelections((current) => ({ ...current, colour }))}
                   aria-label={`${colour.label} ${colour.value}`}
                   aria-pressed={selections.colour.id === colour.id}
