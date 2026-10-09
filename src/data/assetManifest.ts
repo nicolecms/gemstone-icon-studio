@@ -49,7 +49,7 @@ export const assetManifest = {
   metal: numberedAssets({ folder: 'frame-metal', count: 3, labels: ['金', '銀', '銅'] }),
   secondary: numberedAssets({ folder: 'frame-secondary', count: 2, labels: ['白色', '黑色'] }),
   primary: numberedAssets({ folder: 'frame-primary', count: 14, labels: gemstoneNames }),
-  pattern: numberedAssets({ folder: 'background/pattern', filenamePrefix: 'pattern', count: 2, labels: ['圖案 1', '圖案 2'] }),
+  pattern: numberedAssets({ folder: 'pattern', count: 2, labels: ['圖案 1', '圖案 2'] }),
   colours: [
     { id: 'colour-01', label: '石榴粉', value: '#F4D7E8' },
     { id: 'colour-02', label: '紫水晶', value: '#DAC8EC' },
