@@ -78,7 +78,7 @@ export const assetManifest = {
     folder: 'frame-primary',
     count: 14,
     labels: gemstoneNames,
-    optionExtensionOverrides: { 11: '.PNG' },
+    // optionExtensionOverrides: { 11: '.PNG' },
   }),
   pattern: numberedAssets({ folder: 'pattern', count: 2, labels: ['圖案 1', '圖案 2'] }),
   colours: [
