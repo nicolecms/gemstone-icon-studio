@@ -21,7 +21,6 @@ type AssetDefinition = {
   optionFolder?: string
   previewFolder?: string
   optionExtension?: string
-  optionExtensionOverrides?: Record<number, string>
   previewExtension?: string
   usePreviewAsOption?: boolean
 }
@@ -77,8 +76,7 @@ export const assetManifest = {
   primary: numberedAssets({
     folder: 'frame-primary',
     count: 14,
-    labels: gemstoneNames,
-    // optionExtensionOverrides: { 11: '.PNG' },
+    labels: gemstoneNames
   }),
   pattern: numberedAssets({ folder: 'pattern', count: 2, labels: ['圖案 1', '圖案 2'] }),
   colours: [
