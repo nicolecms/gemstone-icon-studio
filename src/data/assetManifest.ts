@@ -18,17 +18,23 @@ type AssetDefinition = {
   count: number
   labels: string[]
   filenamePrefix?: string
+  optionFolder?: string
+  previewFolder?: string
+  optionExtension?: string
+  previewExtension?: string
 }
 
-function numberedAssets({ folder, count, labels, filenamePrefix }: AssetDefinition): AssetVariant[] {
+function numberedAssets({ folder, count, labels, filenamePrefix, optionFolder, previewFolder, optionExtension = '.png', previewExtension = '.PNG' }: AssetDefinition): AssetVariant[] {
   return Array.from({ length: count }, (_, index) => {
     const number = index + 1
-    const filename = `${filenamePrefix ?? folder.split('/').at(-1)}_${number}.png`
+    const baseName = `${filenamePrefix ?? folder.split('/').at(-1)}_${number}`
+    const optionFilename = `${baseName}${optionExtension}`
+    const previewFilename = `${baseName}${previewExtension}`
     return {
       id: `${folder}-${number}`,
       label: labels[index] ?? `${folder} ${index + 1}`,
-      optionSrc: `/assets/options/${folder}/${filename}`,
-      previewSrc: `/assets/live-preview/${folder}/${filename}`,
+      optionSrc: `/assets/options/${optionFolder ?? folder}/${optionFilename}`,
+      previewSrc: `/assets/live-preview/${previewFolder ?? folder}/${previewFilename}`,
     }
   })
 }
@@ -43,13 +49,14 @@ export const assetManifest = {
   ribbon: numberedAssets({ folder: 'ribbon', count: 14, labels: gemstoneNames }),
   character: numberedAssets({
     folder: 'character',
+    optionFolder: 'characters',
     count: 7,
     labels: ['鍾明B', '熊熊', '大紫眼', '灰藍B', 'Miss Bunny', '藍企企', '？？？'],
   }),
   metal: numberedAssets({ folder: 'frame-metal', count: 3, labels: ['金', '銀', '銅'] }),
   secondary: numberedAssets({ folder: 'frame-secondary', count: 2, labels: ['白色', '黑色'] }),
   primary: numberedAssets({ folder: 'frame-primary', count: 14, labels: gemstoneNames }),
-  pattern: numberedAssets({ folder: 'background', filenamePrefix: 'background', count: 2, labels: ['圖案 1', '圖案 2'] }),
+  pattern: numberedAssets({ folder: 'background', filenamePrefix: 'pattern', count: 2, labels: ['圖案 1', '圖案 2'] }),
   colours: [
     { id: 'colour-01', label: '石榴粉', value: '#F4D7E8' },
     { id: 'colour-02', label: '紫水晶', value: '#DAC8EC' },
