@@ -88,6 +88,7 @@ function App() {
       size: 1024,
       includeBackground: true,
       onAssetError: handleAssetError,
+      shouldCancel: () => cancelled,
     })
       .catch((error: unknown) => {
         if (!cancelled) {
