@@ -252,7 +252,7 @@ function App() {
               <span>{isExporting ? '下載中…' : '下載 PNG'}</span>
             </button>
           </div>
-          {exportError && <p className="inline-error" role="alert">{exportError}</p>
+          {exportError && <p className="inline-error" role="alert">{exportError}</p>}
 
           {renderError && <div className="error-panel" role="alert"><strong>無法繪製畫布</strong><p>{renderError}</p></div>}
           {assetErrors.length > 0 && (
