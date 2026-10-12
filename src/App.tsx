@@ -55,6 +55,8 @@ function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [activeStep, setActiveStep] = useState(0)
   const [completionMessage, setCompletionMessage] = useState('')
+  const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false)
+  const [exportPreview, setExportPreview] = useState('')
   const [selections, setSelections] = useState<SelectionState>(defaultSelections)
   const [visible, setVisible] = useState<VisibilityState>({
     jewel: true,
@@ -64,6 +66,7 @@ function App() {
     secondary: true,
     primary: true,
     pattern: true,
+    colour: true,
   })
   const [photo, setPhoto] = useState<RenderConfig['photo']>({ image: null, zoom: 1, rotation: 0, offsetX: 0, offsetY: 0 })
   const [photoError, setPhotoError] = useState('')
@@ -75,7 +78,7 @@ function App() {
   const [isRendering, setIsRendering] = useState(true)
 
   const config = useMemo<RenderConfig>(() => ({
-    colour: selections.colour,
+    colour: visible.colour ? selections.colour : null,
     pattern: visible.pattern ? selections.pattern : null,
     photo,
     metal: visible.metal ? selections.metal : null,
@@ -147,7 +150,7 @@ function App() {
   }
   const stopCanvasDrag = () => { dragRef.current = null }
 
-  const exportPng = async (mode: 'transparent' | 'background') => {
+  const exportPng = async () => {
     setIsExporting(true)
     setExportError('')
     try {
@@ -155,7 +158,7 @@ function App() {
       const exportErrors: string[] = []
       await renderIcon(exportCanvas, config, {
         size: 1024,
-        includeBackground: mode === 'background',
+        includeBackground: true,
         onAssetError: (src) => exportErrors.push(src),
       })
       if (exportErrors.length) throw new Error(`有素材載入失敗：${exportErrors.slice(0, 3).join('、')}`)
@@ -165,7 +168,7 @@ function App() {
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = mode === 'transparent' ? 'gemstone-icon-transparent.png' : 'gemstone-icon-background.png'
+      link.download = 'gemstone-icon.png'
       document.body.appendChild(link)
       link.click()
       link.remove()
@@ -237,16 +240,19 @@ function App() {
           </div>
 
 
-          <section className="export-panel" aria-label="匯出 PNG">
-            <h3>匯出 PNG</h3>
-            <p>兩種格式均保留照片及所有裝飾圖層。</p>
-            <div className="export-actions">
-              <button type="button" disabled={isExporting} onClick={() => void exportPng('transparent')}>透明背景 PNG</button>
-              <button type="button" disabled={isExporting} onClick={() => void exportPng('background')}>含背景 PNG</button>
-            </div>
-            <small>輸出尺寸：1024 × 1024 px{isExporting ? ' · 正在匯出…' : ''}</small>
-            {exportError && <p className="inline-error" role="alert">{exportError}</p>}
-          </section>
+          <div className="preview-download-row">
+            <span className="download-hint">完成設計後，下載你的專屬寶石圖示。</span>
+            <button type="button" className="download-icon-button" aria-label="下載 PNG 並顯示完成提示" title="下載 PNG" disabled={isExporting} onClick={() => {
+              setExportError('')
+              setExportPreview(canvasRef.current?.toDataURL('image/png') ?? '')
+              setIsCompletionModalOpen(true)
+              void exportPng()
+            }}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 16v4h14v-4" /></svg>
+              <span>{isExporting ? '下載中…' : '下載 PNG'}</span>
+            </button>
+          </div>
+          {exportError && <p className="inline-error" role="alert">{exportError}</p>
 
           {renderError && <div className="error-panel" role="alert"><strong>無法繪製畫布</strong><p>{renderError}</p></div>}
           {assetErrors.length > 0 && (
@@ -307,7 +313,13 @@ function App() {
           )}
 
           {activeStep === 4 && <section className="picker-section">
-            <div className="picker-title-row"><h3>純色背景</h3><span>{selections.colour.value.toUpperCase()}</span></div>
+            <div className="picker-title-row">
+              <div><h3>純色背景</h3><p>可關閉純色，保留透明背景或背景圖案</p></div>
+              <label className="mini-toggle" title={visible.colour ? '隱藏純色背景' : '顯示純色背景'}>
+                <input type="checkbox" checked={visible.colour} onChange={() => toggleLayer('colour')} />
+                <span>{visible.colour ? '顯示' : '隱藏'}</span>
+              </label>
+            </div>
             <div className="colour-grid" role="group" aria-label="選擇純色背景">
               {assetManifest.colours.map((colour) => (
                 <button
@@ -389,6 +401,31 @@ function App() {
         <span>用一點閃耀，創作屬於你的故事 ✧</span>
         <span>小寶石工作室 · 開發預覽版</span>
       </footer>
+      {isCompletionModalOpen && (
+        <div className="completion-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setIsCompletionModalOpen(false) }}>
+          <section className="completion-modal" role="dialog" aria-modal="true" aria-labelledby="completion-modal-title">
+            <button type="button" className="completion-modal-close" aria-label="關閉完成提示" onClick={() => setIsCompletionModalOpen(false)}>×</button>
+            <p className="eyebrow">YOUR GEMSTONE IS READY</p>
+            <h2 id="completion-modal-title">你的專屬寶石已準備好！</h2>
+            <p className="completion-modal-copy">PNG 下載已開始。希望這份小小的閃耀，為你的日常添一點魔法。</p>
+            {exportPreview && <img className="completion-preview" src={exportPreview} alt="剛完成的寶石圖示預覽" />}
+            {isExporting && <p className="completion-download-status" role="status">正在準備 PNG 檔案…</p>}
+            {exportError && <p className="inline-error" role="alert">下載未能完成：{exportError}</p>}
+            <div className="completion-modal-actions">
+              <button type="button" className="wizard-button wizard-button-primary" onClick={() => {
+                setSelections(defaultSelections)
+                setVisible({ jewel: true, ribbon: true, character: true, metal: true, secondary: true, primary: true, pattern: true, colour: true })
+                setPhoto({ image: null, zoom: 1, rotation: 0, offsetX: 0, offsetY: 0 })
+                setActiveStep(0)
+                setExportError('')
+                setCompletionMessage('')
+                setIsCompletionModalOpen(false)
+              }}>再創一個</button>
+              <button type="button" className="wizard-button wizard-button-secondary" onClick={() => setIsCompletionModalOpen(false)}>返回編輯</button>
+            </div>
+          </section>
+        </div>
+      )}
     </main>
   )
 }
