@@ -237,17 +237,6 @@ function App() {
           </div>
 
 
-          <section className="photo-tools" aria-label="照片編輯">
-            <h3>上載及編輯照片</h3>
-            <label className="upload-button">選擇圖片
-              <input type="file" accept="image/*" onChange={(event) => uploadPhoto(event.currentTarget.files?.[0])} />
-            </label>
-            <p className="photo-help">在預覽上拖曳照片以移動位置。照片會裁切於固定圓形範圍內。</p>
-            <label className="photo-control">縮放 <input type="range" min="1" max="4" step="0.05" value={photo.zoom} onChange={(event) => setPhoto((current) => ({ ...current, zoom: Number(event.target.value) }))} /><span>{photo.zoom.toFixed(2)}×</span></label>
-            <label className="photo-control">旋轉 <input type="range" min="-180" max="180" step="1" value={photo.rotation} onChange={(event) => setPhoto((current) => ({ ...current, rotation: Number(event.target.value) }))} /><span>{photo.rotation}°</span></label>
-            <div className="photo-actions"><button type="button" onClick={fitPhoto}>適合圓形</button><button type="button" onClick={resetPhoto}>重設照片</button></div>
-            {photoError && <p className="inline-error" role="alert">{photoError}</p>}
-          </section>
           <section className="export-panel" aria-label="匯出 PNG">
             <h3>匯出 PNG</h3>
             <p>兩種格式均保留照片及所有裝飾圖層。</p>
@@ -317,6 +306,19 @@ function App() {
             {activeStep === 3 && '設定金屬框、次要框及主要框；圖層會按順序疊加。'}
             {activeStep === 4 && '選擇純色背景，亦可切換背景圖案的顯示狀態。'}
           </p>
+          {activeStep === 0 && (
+            <section className="photo-tools" aria-label="照片編輯">
+                        <h3>上載及編輯照片</h3>
+                        <label className="upload-button">選擇圖片
+                          <input type="file" accept="image/*" onChange={(event) => uploadPhoto(event.currentTarget.files?.[0])} />
+                        </label>
+                        <p className="photo-help">在預覽上拖曳照片以移動位置。照片會裁切於固定圓形範圍內。</p>
+                        <label className="photo-control">縮放 <input type="range" min="1" max="4" step="0.05" value={photo.zoom} onChange={(event) => setPhoto((current) => ({ ...current, zoom: Number(event.target.value) }))} /><span>{photo.zoom.toFixed(2)}×</span></label>
+                        <label className="photo-control">旋轉 <input type="range" min="-180" max="180" step="1" value={photo.rotation} onChange={(event) => setPhoto((current) => ({ ...current, rotation: Number(event.target.value) }))} /><span>{photo.rotation}°</span></label>
+                        <div className="photo-actions"><button type="button" onClick={fitPhoto}>適合圓形</button><button type="button" onClick={resetPhoto}>重設照片</button></div>
+                        {photoError && <p className="inline-error" role="alert">{photoError}</p>}
+                      </section>
+          )}
 
           {activeStep === 4 && <section className="picker-section">
             <div className="picker-title-row"><h3>純色背景</h3><span>{selections.colour.value.toUpperCase()}</span></div>
