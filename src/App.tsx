@@ -184,7 +184,7 @@ function App() {
     setSelections((current) => ({ ...current, [layer]: asset }))
   }
 
-  const toggleLayer = (layer: SelectableLayer) => {
+  const toggleLayer = (layer: SelectableLayer | 'colour') => {
     setVisible((current) => ({ ...current, [layer]: !current[layer] }))
   }
 
