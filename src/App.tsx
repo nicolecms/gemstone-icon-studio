@@ -258,21 +258,7 @@ function App() {
             </div>
           )}
 
-          <section className="manifest-panel visibility-panel">
-            <div className="section-heading">
-              <div><h3>裝飾圖層</h3><p>關閉不需要的元素，預覽會即時更新。</p></div>
-            </div>
-            <div className="visibility-grid">
-              {pickerSections.map(({ key, title }) => (
-                <label className="visibility-toggle" key={key}>
-                  <input type="checkbox" checked={visible[key]} onChange={() => toggleLayer(key)} />
-                  <span className="toggle-track" aria-hidden="true"><span /></span>
-                  <span>{title}</span>
-                </label>
-              ))}
-            </div>
-            <p className="visibility-note">照片與純色背景固定顯示；背景圖案及其他裝飾可獨立開關。</p>
-          </section>
+
         </div>
 
         <aside className="controls-column">
