@@ -25,9 +25,9 @@ const layerLabels: Record<(typeof layerOrderBottomToTop)[number], string> = {
   colour: '純色背景',
   pattern: '背景圖案',
   photo: '使用者照片（圓形裁切）',
-  metal: '金屬框',
-  secondary: '次要框',
-  primary: '主要框',
+  metal: '金屬配件',
+  secondary: '副色',
+  primary: '主色',
   character: '角色',
   ribbon: '絲帶',
   jewel: '寶石',
@@ -35,7 +35,7 @@ const layerLabels: Record<(typeof layerOrderBottomToTop)[number], string> = {
 
 const wizardSteps = [
   { title: '上載及編輯照片', description: '加入照片，調整位置與大小' },
-  { title: '選擇寶石及絲帶', description: '配搭喜歡的寶石與絲帶' },
+  { title: '選擇蝴蝶結', description: '配搭喜歡的寶石與絲帶' },
   { title: '選擇公仔', description: '挑選你喜歡的角色' },
   { title: '選擇邊框', description: '設定主框、副框及金屬配件' },
   { title: '選擇背景', description: '選擇背景顏色與圖案' },
@@ -45,9 +45,9 @@ const pickerSections: { key: SelectableLayer; title: string; hint: string }[] = 
   { key: 'jewel', title: '寶石', hint: '選擇你的生日寶石' },
   { key: 'ribbon', title: '絲帶', hint: '配搭同款寶石色系' },
   { key: 'character', title: '角色', hint: '選擇喜歡的角色' },
-  { key: 'metal', title: '金屬框', hint: '金、銀或銅' },
-  { key: 'secondary', title: '次要框', hint: '白色或黑色' },
-  { key: 'primary', title: '主要框', hint: '選擇主要框的寶石款式' },
+  { key: 'metal', title: '金屬配件', hint: '金、銀或銅' },
+  { key: 'secondary', title: '副色', hint: '白色或黑色' },
+  { key: 'primary', title: '主色', hint: '選擇主要框的寶石款式' },
   { key: 'pattern', title: '背景圖案', hint: '可關閉圖案，只保留純色' },
 ]
 
@@ -209,23 +209,21 @@ function App() {
           <span>小寶石 <span className="wordmark-light">工作室</span></span>
         </a>
         <span className="topbar-note">打造專屬於你的生日寶石圖示</span>
-        <span className="language-pill">繁體中文</span>
       </header>
 
       <section className="intro">
         <p className="eyebrow">你的圖示，由你創作</p>
         <h1>為日常添一點<span>寶石魔法。</span></h1>
-        <p className="intro-copy">選擇喜歡的寶石、角色與配色，即時預覽你的專屬圖示。</p>
+        <p className="intro-copy">選擇喜歡的寶石、角色與配色，即時預覽你的專屬頭像。</p>
       </section>
 
-      <section className="editor" aria-label="圖示自訂工作區">
+      <section className="editor" aria-label="圖片自訂工作區">
         <div className="preview-column">
           <div className="section-heading">
             <div>
               <p className="eyebrow">即時預覽</p>
-              <h2>你的專屬寶石</h2>
+              <h2>你的寶石頭像</h2>
             </div>
-            <span className="draft-pill"><span />{isRendering ? '更新中' : '即時預覽'}</span>
           </div>
 
           <div className="preview-stage canvas-stage">
@@ -241,7 +239,7 @@ function App() {
 
 
           <div className="preview-download-row">
-            <span className="download-hint">完成設計後，下載你的專屬寶石圖示。</span>
+            <span className="download-hint">完成設計後，下載你的專屬寶石頭像。</span>
             <button type="button" className="download-icon-button" aria-label="下載 PNG 並顯示完成提示" title="下載 PNG" disabled={isExporting} onClick={() => {
               setExportError('')
               setExportPreview(canvasRef.current?.toDataURL('image/png') ?? '')
@@ -294,8 +292,8 @@ function App() {
           <p className="panel-intro">
             {activeStep === 0 && '先上載照片，並調整照片在圓形範圍內的位置。'}
             {activeStep === 1 && '點選縮圖，配搭喜歡的寶石與絲帶。'}
-            {activeStep === 2 && '選擇角色，讓你的圖示更有個性。'}
-            {activeStep === 3 && '設定金屬框、次要框及主要框；圖層會按順序疊加。'}
+            {activeStep === 2 && '選擇公仔，讓你的圖示更有個性。'}
+            {activeStep === 3 && '設定金屬部件、副色及主色；圖層會按順序疊加。'}
             {activeStep === 4 && '選擇純色背景，亦可切換背景圖案的顯示狀態。'}
           </p>
           {activeStep === 0 && (
@@ -307,7 +305,7 @@ function App() {
               <p className="photo-help">在預覽上拖曳照片以移動位置。照片會裁切於固定圓形範圍內。</p>
               <label className="photo-control">縮放 <input type="range" min="1" max="4" step="0.05" value={photo.zoom} onChange={(event) => setPhoto((current) => ({ ...current, zoom: Number(event.target.value) }))} /><span>{photo.zoom.toFixed(2)}×</span></label>
               <label className="photo-control">旋轉 <input type="range" min="-180" max="180" step="1" value={photo.rotation} onChange={(event) => setPhoto((current) => ({ ...current, rotation: Number(event.target.value) }))} /><span>{photo.rotation}°</span></label>
-              <div className="photo-actions"><button type="button" onClick={fitPhoto}>適合圓形</button><button type="button" onClick={resetPhoto}>重設照片</button></div>
+              <div className="photo-actions"><button type="button" onClick={fitPhoto}>符合遮罩範圍</button><button type="button" onClick={resetPhoto}>重設照片</button></div>
               {photoError && <p className="inline-error" role="alert">{photoError}</p>}
             </section>
           )}
@@ -406,8 +404,8 @@ function App() {
           <section className="completion-modal" role="dialog" aria-modal="true" aria-labelledby="completion-modal-title">
             <button type="button" className="completion-modal-close" aria-label="關閉完成提示" onClick={() => setIsCompletionModalOpen(false)}>×</button>
             <p className="eyebrow">YOUR GEMSTONE IS READY</p>
-            <h2 id="completion-modal-title">你的專屬寶石已準備好！</h2>
-            <p className="completion-modal-copy">PNG 下載已開始。希望這份小小的閃耀，為你的日常添一點魔法。</p>
+            <h2 id="completion-modal-title">製作完成！</h2>
+            <p className="completion-modal-copy">PNG 下載已開始！是張非常可愛的頭像呢 ♪</p>
             {exportPreview && <img className="completion-preview" src={exportPreview} alt="剛完成的寶石圖示預覽" />}
             {isExporting && <p className="completion-download-status" role="status">正在準備 PNG 檔案…</p>}
             {exportError && <p className="inline-error" role="alert">下載未能完成：{exportError}</p>}
@@ -420,7 +418,7 @@ function App() {
                 setExportError('')
                 setCompletionMessage('')
                 setIsCompletionModalOpen(false)
-              }}>再創一個</button>
+              }}>再做一張</button>
               <button type="button" className="wizard-button wizard-button-secondary" onClick={() => setIsCompletionModalOpen(false)}>返回編輯</button>
             </div>
           </section>
