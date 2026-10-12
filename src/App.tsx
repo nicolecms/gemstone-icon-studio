@@ -33,6 +33,14 @@ const layerLabels: Record<(typeof layerOrderBottomToTop)[number], string> = {
   jewel: '寶石',
 }
 
+const wizardSteps = [
+  { title: '上載及編輯照片', description: '加入照片，調整位置與大小' },
+  { title: '選擇寶石及絲帶', description: '配搭喜歡的寶石與絲帶' },
+  { title: '選擇公仔', description: '挑選你喜歡的角色' },
+  { title: '選擇邊框', description: '設定主框、副框及金屬配件' },
+  { title: '選擇背景', description: '選擇背景顏色與圖案' },
+] as const
+
 const pickerSections: { key: SelectableLayer; title: string; hint: string }[] = [
   { key: 'jewel', title: '寶石', hint: '選擇你的生日寶石' },
   { key: 'ribbon', title: '絲帶', hint: '配搭同款寶石色系' },
@@ -45,6 +53,8 @@ const pickerSections: { key: SelectableLayer; title: string; hint: string }[] = 
 
 function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [activeStep, setActiveStep] = useState(0)
+  const [completionMessage, setCompletionMessage] = useState('')
   const [selections, setSelections] = useState<SelectionState>(defaultSelections)
   const [visible, setVisible] = useState<VisibilityState>({
     jewel: true,
@@ -176,6 +186,17 @@ function App() {
   }
 
   const selectedAsset = (layer: SelectableLayer) => selections[layer]
+  const goToStep = (step: number) => {
+    setActiveStep(Math.max(0, Math.min(wizardSteps.length - 1, step)))
+    setCompletionMessage('')
+  }
+  const visiblePickerSections = pickerSections.filter(({ key }) => {
+    if (activeStep === 1) return key === 'jewel' || key === 'ribbon'
+    if (activeStep === 2) return key === 'character'
+    if (activeStep === 3) return key === 'metal' || key === 'secondary' || key === 'primary'
+    if (activeStep === 4) return key === 'pattern'
+    return false
+  })
 
   return (
     <main className="studio" lang="zh-Hant">
@@ -267,12 +288,37 @@ function App() {
 
         <aside className="controls-column">
           <div className="section-heading controls-heading">
-            <div><p className="eyebrow">自訂你的圖示</p><h2>選擇素材</h2></div>
-            <span className="step-count">8 款設定</span>
+            <div><p className="eyebrow">自訂你的圖示</p><h2>逐步打造</h2></div>
+            <span className="step-count">第 {activeStep + 1}／{wizardSteps.length} 步</span>
           </div>
-          <p className="panel-intro">點選縮圖即可更新左側預覽。金屬框、次要框及主要框會按順序疊加顯示。</p>
+          <nav className="wizard-progress" aria-label="自訂步驟">
+            {wizardSteps.map((step, index) => (
+              <button
+                type="button"
+                key={step.title}
+                className={`wizard-step ${activeStep === index ? 'is-active' : ''} ${activeStep > index ? 'is-complete' : ''}`}
+                aria-current={activeStep === index ? 'step' : undefined}
+                onClick={() => goToStep(index)}
+              >
+                <span className="wizard-step-number">{activeStep > index ? '✓' : index + 1}</span>
+                <span className="wizard-step-title">{step.title}</span>
+              </button>
+            ))}
+          </nav>
+          <div className="wizard-step-heading">
+            <p className="eyebrow">STEP {String(activeStep + 1).padStart(2, '0')}</p>
+            <h3>{wizardSteps[activeStep].title}</h3>
+            <p>{wizardSteps[activeStep].description}</p>
+          </div>
+          <p className="panel-intro">
+            {activeStep === 0 && '先上載照片，並調整照片在圓形範圍內的位置。'}
+            {activeStep === 1 && '點選縮圖，配搭喜歡的寶石與絲帶。'}
+            {activeStep === 2 && '選擇角色，讓你的圖示更有個性。'}
+            {activeStep === 3 && '設定金屬框、次要框及主要框；圖層會按順序疊加。'}
+            {activeStep === 4 && '選擇純色背景，亦可切換背景圖案的顯示狀態。'}
+          </p>
 
-          <section className="picker-section">
+          {activeStep === 4 && <section className="picker-section">
             <div className="picker-title-row"><h3>純色背景</h3><span>{selections.colour.value.toUpperCase()}</span></div>
             <div className="colour-grid" role="group" aria-label="選擇純色背景">
               {assetManifest.colours.map((colour) => (
@@ -288,9 +334,9 @@ function App() {
                 ><span /></button>
               ))}
             </div>
-          </section>
+          </section>}
 
-          {pickerSections.map(({ key, title, hint }) => {
+          {visiblePickerSections.map(({ key, title, hint }) => {
             const variants = assetManifest[key === 'pattern' ? 'pattern' : key]
             return (
               <section className="picker-section" key={key}>
@@ -339,6 +385,26 @@ function App() {
               </section>
             )
           })}
+          {activeStep === 4 && (
+            <section className="picker-section">
+              <div className="picker-title-row">
+                <div><h3>背景圖案</h3><p>可關閉圖案，只保留純色背景</p></div>
+                <label className="mini-toggle">
+                  <input type="checkbox" checked={visible.pattern} onChange={() => toggleLayer('pattern')} />
+                  <span>{visible.pattern ? '顯示' : '隱藏'}</span>
+                </label>
+              </div>
+            </section>
+          )}
+          <div className="wizard-navigation">
+            <button type="button" className="wizard-button wizard-button-secondary" disabled={activeStep === 0} onClick={() => goToStep(activeStep - 1)}>上一步</button>
+            {activeStep < wizardSteps.length - 1 ? (
+              <button type="button" className="wizard-button wizard-button-primary" onClick={() => goToStep(activeStep + 1)}>下一步 →</button>
+            ) : (
+              <button type="button" className="wizard-button wizard-button-primary" onClick={() => setCompletionMessage('設定已完成。下載及完成提示會在下一階段接上。')}>完成設定</button>
+            )}
+          </div>
+          {completionMessage && <p className="wizard-completion-message" role="status">{completionMessage}</p>}
         </aside>
       </section>
 
