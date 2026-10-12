@@ -587,3 +587,20 @@
   .wizard-step-number { width: 24px; height: 24px; }
   .wizard-step-heading { padding: 12px; }
 }
+
+
+.wizard-completion-message {
+  margin: 12px 0 0;
+  padding: 11px 13px;
+  border: 1px solid #d9c8df;
+  border-radius: 10px;
+  background: #faf4fb;
+  color: #765b81;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+@media (max-width: 540px) {
+  .wizard-navigation { margin-top: 17px; }
+  .wizard-button { padding: 10px 12px; }
+}
