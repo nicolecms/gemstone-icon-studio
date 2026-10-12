@@ -350,4 +350,117 @@ function App() {
   )
 }
 
+export default App          {renderError && <div className="error-panel" role="alert"><strong>無法繪製畫布</strong><p>{renderError}</p></div>}
+          {assetErrors.length > 0 && (
+            <div className="warning-panel" role="status">
+              <strong>有 {assetErrors.length} 個素材無法載入</strong>
+              <p>請確認檔案存在於下列路徑，並且檔名大小寫一致。其餘圖層仍會繼續繪製。</p>
+              <ul>{assetErrors.slice(0, 6).map((src) => <li key={src}><code>{src}</code></li>)}</ul>
+              {assetErrors.length > 6 && <p>另有 {assetErrors.length - 6} 個素材未能載入。</p>}
+            </div>
+          )}
+
+          <section className="manifest-panel visibility-panel">
+            <div className="section-heading">
+              <div><h3>裝飾圖層</h3><p>關閉不需要的元素，預覽會即時更新。</p></div>
+            </div>
+            <div className="visibility-grid">
+              {pickerSections.map(({ key, title }) => (
+                <label className="visibility-toggle" key={key}>
+                  <input type="checkbox" checked={visible[key]} onChange={() => toggleLayer(key)} />
+                  <span className="toggle-track" aria-hidden="true"><span /></span>
+                  <span>{title}</span>
+                </label>
+              ))}
+            </div>
+            <p className="visibility-note">照片與純色背景固定顯示；背景圖案及其他裝飾可獨立開關。</p>
+          </section>
+        </div>
+
+        <aside className="controls-column">
+          <div className="section-heading controls-heading">
+            <div><p className="eyebrow">自訂你的圖示</p><h2>選擇素材</h2></div>
+            <span className="step-count">8 款設定</span>
+          </div>
+          <p className="panel-intro">點選縮圖即可更新左側預覽。金屬框、次要框及主要框會按順序疊加顯示。</p>
+
+          <section className="picker-section">
+            <div className="picker-title-row"><h3>純色背景</h3><span>{selections.colour.value.toUpperCase()}</span></div>
+            <div className="colour-grid" role="group" aria-label="選擇純色背景">
+              {assetManifest.colours.map((colour) => (
+                <button
+                  type="button"
+                  key={colour.id}
+                  className={`colour-swatch ${selections.colour.id === colour.id ? 'is-selected' : ''}`}
+                  style={{ '--swatch': colour.value } as CSSProperties}
+                  onClick={() => setSelections((current) => ({ ...current, colour }))}
+                  aria-label={`${colour.label} ${colour.value}`}
+                  aria-pressed={selections.colour.id === colour.id}
+                  title={`${colour.label} · ${colour.value}`}
+                ><span /></button>
+              ))}
+            </div>
+          </section>
+
+          {pickerSections.map(({ key, title, hint }) => {
+            const variants = assetManifest[key === 'pattern' ? 'pattern' : key]
+            return (
+              <section className="picker-section" key={key}>
+                <div className="picker-title-row">
+                  <div><h3>{title}</h3><p>{hint}</p></div>
+                  <label className="mini-toggle" title={visible[key] ? `隱藏${title}` : `顯示${title}`}>
+                    <input type="checkbox" checked={visible[key]} onChange={() => toggleLayer(key)} />
+                    <span>{visible[key] ? '顯示' : '隱藏'}</span>
+                  </label>
+                </div>
+                {key === 'secondary' ? (
+                  <div className="secondary-options" role="group" aria-label="選擇次要框顏色">
+                    {assetManifest.secondary.map((asset, index) => (
+                      <button
+                        type="button"
+                        key={asset.id}
+                        className={`secondary-option ${selections.secondary.id === asset.id ? 'is-selected' : ''}`}
+                        onClick={() => chooseAsset('secondary', asset)}
+                        aria-pressed={selections.secondary.id === asset.id}
+                      >
+                        <span className={`secondary-swatch ${index === 0 ? 'swatch-white' : 'swatch-black'}`} />
+                        <span>{asset.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="asset-grid" role="group" aria-label={`選擇${title}`}>
+                    {variants.map((asset) => (
+                      <button
+                        type="button"
+                        key={asset.id}
+                        className={`asset-option ${selectedAsset(key).id === asset.id ? 'is-selected' : ''}`}
+                        onClick={() => chooseAsset(key, asset)}
+                        aria-pressed={selectedAsset(key).id === asset.id}
+                        title={asset.label}
+                      >
+                        <span className="asset-thumb">
+                          <img src={asset.optionSrc} alt="" loading="lazy" onError={(event) => { event.currentTarget.style.opacity = '0' }} />
+                          <span className="asset-thumb-fallback" aria-hidden="true">✧</span>
+                        </span>
+                        <span className="asset-option-label">{asset.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </section>
+            )
+          })}
+        </aside>
+      </section>
+
+      <footer className="page-footer">
+        <span>用一點閃耀，創作屬於你的故事 ✧</span>
+        <span>小寶石工作室 · 開發預覽版</span>
+      </footer>
+    </main>
+  )
+}
+
 export default App
+
