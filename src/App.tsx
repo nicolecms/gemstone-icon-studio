@@ -19,7 +19,7 @@ type SelectionState = {
   pattern: AssetVariant
   colour: (typeof assetManifest.colours)[number]
 }
-type VisibilityState = Record<SelectableLayer, boolean>
+type VisibilityState = Record<SelectableLayer, boolean> & { colour: boolean }
 
 const layerLabels: Record<(typeof layerOrderBottomToTop)[number], string> = {
   colour: '純色背景',
