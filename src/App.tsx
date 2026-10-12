@@ -36,7 +36,7 @@ const layerLabels: Record<(typeof layerOrderBottomToTop)[number], string> = {
 const wizardSteps = [
   { title: '上載及編輯照片', description: '加入照片，調整位置與大小' },
   { title: '選擇蝴蝶結', description: '配搭喜歡的寶石與絲帶' },
-  { title: '選擇公仔', description: '挑選你喜歡的角色' },
+  { title: '選擇公仔', description: '挑選你喜歡的公仔' },
   { title: '選擇邊框', description: '設定主框、副框及金屬配件' },
   { title: '選擇背景', description: '選擇背景顏色與圖案' },
 ] as const
@@ -44,7 +44,7 @@ const wizardSteps = [
 const pickerSections: { key: SelectableLayer; title: string; hint: string }[] = [
   { key: 'jewel', title: '寶石', hint: '選擇你的生日寶石' },
   { key: 'ribbon', title: '絲帶', hint: '配搭同款寶石色系' },
-  { key: 'character', title: '角色', hint: '選擇喜歡的角色' },
+  { key: 'character', title: '公仔', hint: '選擇喜歡的公仔' },
   { key: 'metal', title: '金屬配件', hint: '金、銀或銅' },
   { key: 'secondary', title: '副色', hint: '白色或黑色' },
   { key: 'primary', title: '主色', hint: '選擇主要框的寶石款式' },
@@ -204,11 +204,11 @@ function App() {
   return (
     <main className="studio" lang="zh-Hant">
       <header className="topbar">
-        <a className="wordmark" href="/" aria-label="小寶石工作室首頁">
+        <a className="wordmark" href="/" aria-label="BB寶石工作坊首頁">
           <span className="wordmark-gem" aria-hidden="true">✧</span>
-          <span>小寶石 <span className="wordmark-light">工作室</span></span>
+          <span>BB寶石 <span className="wordmark-light">工作坊</span></span>
         </a>
-        <span className="topbar-note">打造專屬於你的生日寶石圖示</span>
+        <span className="topbar-note">與BB們齊手打造獨一無二的寶石頭像</span>
       </header>
 
       <section className="intro">
@@ -397,7 +397,7 @@ function App() {
 
       <footer className="page-footer">
         <span>用一點閃耀，創作屬於你的故事 ✧</span>
-        <span>小寶石工作室 · 開發預覽版</span>
+        <span>BB寶石工作坊 · 開發預覽版</span>
       </footer>
       {isCompletionModalOpen && (
         <div className="completion-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setIsCompletionModalOpen(false) }}>
