@@ -9,7 +9,7 @@ export type PhotoTransform = {
 }
 
 export type RenderConfig = {
-  colour: ColourVariant
+  colour: ColourVariant | null
   pattern: AssetVariant | null
   photo: PhotoTransform
   metal: AssetVariant | null
@@ -130,8 +130,10 @@ export async function renderIcon(
   ctx.scale(size / SIZE, size / SIZE)
   if (options.shouldCancel?.()) { ctx.restore(); return }
   if (includeBackground) {
-    ctx.fillStyle = config.colour.value
-    ctx.fillRect(0, 0, SIZE, SIZE)
+    if (config.colour) {
+      ctx.fillStyle = config.colour.value
+      ctx.fillRect(0, 0, SIZE, SIZE)
+    }
     await drawAsset(ctx, config.pattern, options)
     if (options.shouldCancel?.()) { ctx.restore(); return }
   }
