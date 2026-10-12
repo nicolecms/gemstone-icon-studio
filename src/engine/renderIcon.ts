@@ -29,12 +29,18 @@ export type RenderOptions = {
 
 const imageCache = new Map<string, HTMLImageElement>()
 const SIZE = 1024
+// Given mask: 856px diameter on a 1080px canvas, with asymmetric padding.
+// Scale its centre and radius to the renderer's 1024 × 1024 coordinate space.
+const PHOTO_CIRCLE = {
+  cx: ((115 + (1080 - 115 - 109) / 2) / 1080) * SIZE,
+  cy: ((112 + (1080 - 112 - 102) / 2) / 1080) * SIZE,
+  radius: (856 / 2 / 1080) * SIZE,
+}
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   const cached = imageCache.get(src)
   if (cached?.complete && cached.naturalWidth > 0) return Promise.resolve(cached)
   if (cached?.complete && cached.naturalWidth === 0) imageCache.delete(src)
-
   return new Promise((resolve, reject) => {
     const image = new Image()
     image.onload = () => {
@@ -62,7 +68,6 @@ function drawPlaceholderPhoto(ctx: CanvasRenderingContext2D, cx: number, cy: num
   gradient.addColorStop(1, '#DCCBEA')
   ctx.fillStyle = gradient
   ctx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2)
-
   ctx.fillStyle = '#B58CA7'
   ctx.beginPath()
   ctx.ellipse(cx, cy - radius * 0.2, radius * 0.28, radius * 0.34, 0, 0, Math.PI * 2)
@@ -74,26 +79,20 @@ function drawPlaceholderPhoto(ctx: CanvasRenderingContext2D, cx: number, cy: num
   ctx.fillStyle = '#FFF9FC'
   ctx.font = '500 25px sans-serif'
   ctx.textAlign = 'center'
-  ctx.fillText('預覽照片', cx, cy + radius * 0.86)
+  ctx.fillText('上載照片', cx, cy + radius * 0.86)
 }
 
 function drawPhoto(ctx: CanvasRenderingContext2D, photo: PhotoTransform) {
-  const cx = SIZE / 2
-  const cy = SIZE / 2
-  // Tune this radius to the transparent aperture in the supplied frame artwork.
-  const radius = SIZE * 0.315
-
+  const { cx, cy, radius } = PHOTO_CIRCLE
   ctx.save()
   ctx.beginPath()
   ctx.arc(cx, cy, radius, 0, Math.PI * 2)
   ctx.clip()
-
   if (!photo.image) {
     drawPlaceholderPhoto(ctx, cx, cy, radius)
     ctx.restore()
     return
   }
-
   const image = photo.image
   const fitScale = Math.max((radius * 2) / image.naturalWidth, (radius * 2) / image.naturalHeight)
   const scale = fitScale * Math.max(0.25, Math.min(photo.zoom, 5))
@@ -104,27 +103,17 @@ function drawPhoto(ctx: CanvasRenderingContext2D, photo: PhotoTransform) {
   ctx.restore()
 }
 
-async function drawAsset(
-  ctx: CanvasRenderingContext2D,
-  asset: AssetVariant | null,
-  options: RenderOptions,
-) {
+async function drawAsset(ctx: CanvasRenderingContext2D, asset: AssetVariant | null, options: RenderOptions) {
   if (!asset || options.shouldCancel?.()) return
   try {
     const image = await loadImage(asset.previewSrc)
     if (options.shouldCancel?.()) return
-    // All full-size layer assets share the same 1024 × 1024 canvas coordinates.
     ctx.drawImage(image, 0, 0, SIZE, SIZE)
   } catch (error) {
     options.onAssetError?.(asset.previewSrc, error)
-    // A missing layer must not prevent the rest of the composition from rendering.
   }
 }
 
-/**
- * Draws the icon from bottom to top. The UI only supplies a config; rendering
- * and asset-loading concerns stay isolated in this module.
- */
 export async function renderIcon(
   canvas: HTMLCanvasElement,
   config: RenderConfig,
@@ -134,34 +123,23 @@ export async function renderIcon(
   const includeBackground = options.includeBackground ?? true
   canvas.width = size
   canvas.height = size
-
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('此瀏覽器無法建立 Canvas 2D 繪圖環境。')
-
   ctx.clearRect(0, 0, size, size)
   ctx.save()
   ctx.scale(size / SIZE, size / SIZE)
-
   if (options.shouldCancel?.()) { ctx.restore(); return }
-
   if (includeBackground) {
     ctx.fillStyle = config.colour.value
     ctx.fillRect(0, 0, SIZE, SIZE)
     await drawAsset(ctx, config.pattern, options)
     if (options.shouldCancel?.()) { ctx.restore(); return }
   }
-
+  // Photo is always drawn in both export modes; only the background is optional.
   drawPhoto(ctx, config.photo)
-  await drawAsset(ctx, config.metal, options)
-  if (options.shouldCancel?.()) { ctx.restore(); return }
-  await drawAsset(ctx, config.secondary, options)
-  if (options.shouldCancel?.()) { ctx.restore(); return }
-  await drawAsset(ctx, config.primary, options)
-  if (options.shouldCancel?.()) { ctx.restore(); return }
-  await drawAsset(ctx, config.character, options)
-  if (options.shouldCancel?.()) { ctx.restore(); return }
-  await drawAsset(ctx, config.ribbon, options)
-  if (options.shouldCancel?.()) { ctx.restore(); return }
-  await drawAsset(ctx, config.jewel, options)
+  for (const asset of [config.metal, config.secondary, config.primary, config.character, config.ribbon, config.jewel]) {
+    await drawAsset(ctx, asset, options)
+    if (options.shouldCancel?.()) { ctx.restore(); return }
+  }
   ctx.restore()
 }
