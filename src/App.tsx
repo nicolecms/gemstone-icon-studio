@@ -33,12 +33,12 @@ const layerLabels: Record<(typeof layerOrderBottomToTop)[number], string> = {
   jewel: '寶石',
 }
 
-const wizardSteps = [
-  { title: '上載及編輯照片', description: '加入照片，調整位置與大小' },
-  { title: '選擇蝴蝶結', description: '配搭喜歡的寶石與絲帶' },
-  { title: '選擇公仔', description: '挑選你喜歡的公仔' },
-  { title: '選擇邊框', description: '設定主框、副框及金屬配件' },
-  { title: '選擇背景', description: '選擇背景顏色與圖案' },
+const wizardStepTitles = [
+  '上載及編輯照片',
+  '選擇蝴蝶結',
+  '選擇公仔',
+  '選擇邊框',
+  '選擇背景',
 ] as const
 
 const pickerSections: { key: SelectableLayer; title: string; hint: string }[] = [
@@ -57,7 +57,6 @@ function App() {
   const controlsColumnRef = useRef<HTMLElement>(null)
   const [activeStep, setActiveStep] = useState(0)
   const [categoryTab, setCategoryTab] = useState<Record<number, string>>({ 1: 'jewel', 3: 'primary', 4: 'colour' })
-  const [completionMessage, setCompletionMessage] = useState('')
   const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false)
   const [exportPreview, setExportPreview] = useState('')
   const [selections, setSelections] = useState<SelectionState>(defaultSelections)
@@ -224,8 +223,7 @@ function App() {
 
   const selectedAsset = (layer: SelectableLayer) => selections[layer]
   const goToStep = (step: number) => {
-    setActiveStep(Math.max(0, Math.min(wizardSteps.length - 1, step)))
-    setCompletionMessage('')
+    setActiveStep(Math.max(0, Math.min(wizardStepTitles.length - 1, step)))
   }
   const visiblePickerSections = pickerSections.filter(({ key }) => {
     if (activeStep === 1) return key === categoryTab[1]
@@ -289,25 +287,11 @@ function App() {
 
         <aside className="controls-column" ref={controlsColumnRef}>
           <div className="sidebar-heading">
-            <div><p className="eyebrow">自訂你的頭像</p><h2>{wizardSteps[activeStep].title}</h2>
+            <div><p className="eyebrow">自訂你的頭像</p><h2>{wizardStepTitles[activeStep]}</h2>
               {activeStep === 4 && <p className="sidebar-instruction">可關閉此層顯示，以導出透明背景圖片</p>}
             </div>
-            <span className="step-count">{activeStep + 1}/{wizardSteps.length}</span>
+            <span className="step-count">{activeStep + 1}/{wizardStepTitles.length}</span>
           </div>
-          <nav className="wizard-progress" aria-label="自訂步驟">
-            {wizardSteps.map((step, index) => (
-              <button
-                type="button"
-                key={step.title}
-                className={`wizard-step ${activeStep === index ? 'is-active' : ''} ${activeStep > index ? 'is-complete' : ''}`}
-                aria-current={activeStep === index ? 'step' : undefined}
-                onClick={() => goToStep(index)}
-              >
-                <span className="wizard-step-number">{activeStep > index ? '✓' : index + 1}</span>
-                <span className="wizard-step-title">{step.title}</span>
-              </button>
-            ))}
-          </nav>
           {[1, 3, 4].includes(activeStep) && <div className="category-tabs" role="tablist" aria-label="選擇類別">
             {(activeStep === 1 ? [{ key: 'jewel', label: '寶石' }, { key: 'ribbon', label: '絲帶' }] : activeStep === 3 ? [{ key: 'primary', label: '主色' }, { key: 'secondary', label: '副色' }, { key: 'metal', label: '金屬配件' }] : [{ key: 'colour', label: '顏色' }, { key: 'pattern', label: '圖案' }]).map((tab) => {
               const disabled = activeStep === 4 && tab.key === 'pattern' && !visible.colour
@@ -405,10 +389,11 @@ function App() {
           })}
           </div>
           <div className="wizard-navigation">
-            <button type="button" className="wizard-icon-button wizard-button-secondary" aria-label="上一步" title="上一步" disabled={activeStep === 0} onClick={() => goToStep(activeStep - 1)}>‹</button>
-            {activeStep < wizardSteps.length - 1 ? <button type="button" className="wizard-icon-button wizard-button-primary" aria-label="下一步" title="下一步" onClick={() => goToStep(activeStep + 1)}>›</button> : <button type="button" className="wizard-icon-button wizard-button-primary" aria-label="下載 PNG" title="下載 PNG" disabled={isExporting} onClick={handleDownload}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 16v4h14v-4" /></svg></button>}
+            <div className="wizard-navigation-actions">
+              <button type="button" className="wizard-icon-button wizard-button-secondary" aria-label="上一步" title="上一步" disabled={activeStep === 0} onClick={() => goToStep(activeStep - 1)}>‹</button>
+              {activeStep < wizardStepTitles.length - 1 ? <button type="button" className="wizard-icon-button wizard-button-primary" aria-label="下一步" title="下一步" onClick={() => goToStep(activeStep + 1)}>›</button> : <button type="button" className="wizard-icon-button wizard-button-primary" aria-label="下載 PNG" title="下載 PNG" disabled={isExporting} onClick={handleDownload}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 16v4h14v-4" /></svg></button>}
+            </div>
           </div>
-          {completionMessage && <p className="wizard-completion-message" role="status">{completionMessage}</p>}
         </aside>
       </section>
 
@@ -433,7 +418,6 @@ function App() {
                 setPhoto({ image: null, zoom: 1, rotation: 0, offsetX: 0, offsetY: 0 })
                 setActiveStep(0)
                 setExportError('')
-                setCompletionMessage('')
                 setIsCompletionModalOpen(false)
               }}>再做一張</button>
               <button type="button" className="wizard-button wizard-button-secondary" onClick={() => setIsCompletionModalOpen(false)}>返回編輯</button>
