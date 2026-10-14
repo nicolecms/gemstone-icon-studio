@@ -460,7 +460,16 @@
   border: 1px solid #d9c6df; border-radius: 9px; padding: 9px 12px;
   background: #f8f0fa; color: #755b80; font: inherit; font-size: 11px; cursor: pointer;
 }
-.upload-button input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+.photo-file-input { display: none; }
+.uploaded-photo { min-width: 0; }
+.uploaded-photo-name {
+  overflow: hidden;
+  margin: 0 0 10px;
+  color: #786a7b;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .photo-help, .export-panel p { margin: 10px 0 13px; color: #9b8c9c; font-size: 10px; line-height: 1.6; }
 .photo-control { display: grid; grid-template-columns: 42px minmax(0,1fr) 48px; gap: 9px; align-items: center; margin: 13px 0; color: #786a7b; font-size: 11px; }
 .photo-control input { width: 100%; accent-color: #9675a2; }

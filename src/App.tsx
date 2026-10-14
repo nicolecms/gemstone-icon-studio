@@ -55,6 +55,9 @@ function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const previewColumnRef = useRef<HTMLDivElement>(null)
   const controlsColumnRef = useRef<HTMLElement>(null)
+  const photoInputRef = useRef<HTMLInputElement>(null)
+  const photoObjectUrlRef = useRef<string | null>(null)
+  const pendingPhotoUrlRef = useRef<string | null>(null)
   const [activeStep, setActiveStep] = useState(0)
   const [categoryTab, setCategoryTab] = useState<Record<number, string>>({ 1: 'jewel', 3: 'primary', 4: 'colour' })
   const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false)
@@ -71,6 +74,7 @@ function App() {
     colour: true,
   })
   const [photo, setPhoto] = useState<RenderConfig['photo']>({ image: null, zoom: 1, rotation: 0, offsetX: 0, offsetY: 0 })
+  const [photoFileName, setPhotoFileName] = useState('')
   const [photoError, setPhotoError] = useState('')
   const [exportError, setExportError] = useState('')
   const [isExporting, setIsExporting] = useState(false)
@@ -146,19 +150,55 @@ function App() {
     }
   }, [])
 
+  useEffect(() => () => {
+    if (photoObjectUrlRef.current) URL.revokeObjectURL(photoObjectUrlRef.current)
+    if (pendingPhotoUrlRef.current) URL.revokeObjectURL(pendingPhotoUrlRef.current)
+  }, [])
 
   const uploadPhoto = (file?: File) => {
     if (!file) return
     if (!file.type.startsWith('image/')) { setPhotoError('請選擇有效的圖片檔案。'); return }
     const url = URL.createObjectURL(file)
+    if (pendingPhotoUrlRef.current) URL.revokeObjectURL(pendingPhotoUrlRef.current)
+    pendingPhotoUrlRef.current = url
     const image = new Image()
     image.onload = () => {
+      if (pendingPhotoUrlRef.current !== url) {
+        URL.revokeObjectURL(url)
+        return
+      }
+      pendingPhotoUrlRef.current = null
+      if (photoObjectUrlRef.current) URL.revokeObjectURL(photoObjectUrlRef.current)
+      photoObjectUrlRef.current = url
       setPhoto({ image, zoom: 1, rotation: 0, offsetX: 0, offsetY: 0 })
+      setPhotoFileName(file.name)
       setPhotoError('')
       setExportError('')
     }
-    image.onerror = () => { URL.revokeObjectURL(url); setPhotoError('無法讀取這張圖片，請嘗試另一個檔案。') }
+    image.onerror = () => {
+      URL.revokeObjectURL(url)
+      if (pendingPhotoUrlRef.current === url) {
+        pendingPhotoUrlRef.current = null
+        setPhotoError('無法讀取這張圖片，請嘗試另一個檔案。')
+      }
+    }
     image.src = url
+  }
+
+  const handlePhotoInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    uploadPhoto(event.currentTarget.files?.[0])
+    event.currentTarget.value = ''
+  }
+
+  const removePhoto = () => {
+    if (photoObjectUrlRef.current) URL.revokeObjectURL(photoObjectUrlRef.current)
+    if (pendingPhotoUrlRef.current) URL.revokeObjectURL(pendingPhotoUrlRef.current)
+    photoObjectUrlRef.current = null
+    pendingPhotoUrlRef.current = null
+    setPhoto({ image: null, zoom: 1, rotation: 0, offsetX: 0, offsetY: 0 })
+    setPhotoFileName('')
+    setPhotoError('')
+    setExportError('')
   }
 
   const resetPhoto = () => setPhoto((current) => ({ ...current, zoom: 1, rotation: 0, offsetX: 0, offsetY: 0 }))
@@ -303,9 +343,18 @@ function App() {
           {activeStep === 0 && (
             <section className="photo-tools" aria-label="照片編輯">
               <h3>上載及編輯照片</h3>
-              <label className="upload-button">選擇圖片
-                <input type="file" accept="image/*" onChange={(event) => uploadPhoto(event.currentTarget.files?.[0])} />
-              </label>
+              <input ref={photoInputRef} className="photo-file-input" type="file" accept="image/*" onChange={handlePhotoInputChange} />
+              {photo.image ? (
+                <div className="uploaded-photo">
+                  <p className="uploaded-photo-name" title={photoFileName}>{photoFileName}</p>
+                  <div className="photo-actions">
+                    <button type="button" onClick={() => photoInputRef.current?.click()}>更換圖片</button>
+                    <button type="button" onClick={removePhoto}>移除圖片</button>
+                  </div>
+                </div>
+              ) : (
+                <button type="button" className="upload-button" onClick={() => photoInputRef.current?.click()}>選擇圖片</button>
+              )}
               <p className="photo-help">在預覽上拖曳照片以移動位置。照片會裁切於固定圓形範圍內。</p>
               <label className="photo-control">縮放 <input type="range" min="1" max="4" step="0.05" value={photo.zoom} onChange={(event) => setPhoto((current) => ({ ...current, zoom: Number(event.target.value) }))} /><span>{photo.zoom.toFixed(2)}×</span></label>
               <label className="photo-control">旋轉 <input type="range" min="-180" max="180" step="1" value={photo.rotation} onChange={(event) => setPhoto((current) => ({ ...current, rotation: Number(event.target.value) }))} /><span>{photo.rotation}°</span></label>
@@ -415,7 +464,7 @@ function App() {
               <button type="button" className="wizard-button wizard-button-primary" onClick={() => {
                 setSelections(defaultSelections)
                 setVisible({ jewel: true, ribbon: true, character: true, metal: true, secondary: true, primary: true, pattern: true, colour: true })
-                setPhoto({ image: null, zoom: 1, rotation: 0, offsetX: 0, offsetY: 0 })
+                removePhoto()
                 setActiveStep(0)
                 setExportError('')
                 setIsCompletionModalOpen(false)

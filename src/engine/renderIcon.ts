@@ -29,6 +29,7 @@ export type RenderOptions = {
 
 const imageCache = new Map<string, HTMLImageElement>()
 const SIZE = 1024
+const DEFAULT_ICON_SRC = '/assets/default-icon.PNG'
 // Given mask: 856px diameter on a 1080px canvas, with asymmetric padding.
 // Scale its centre and radius to the renderer's 1024 × 1024 coordinate space.
 const PHOTO_CIRCLE = {
@@ -62,34 +63,26 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   })
 }
 
-function drawPlaceholderPhoto(ctx: CanvasRenderingContext2D, cx: number, cy: number, radius: number) {
-  const gradient = ctx.createLinearGradient(cx - radius, cy - radius, cx + radius, cy + radius)
-  gradient.addColorStop(0, '#F9EAF1')
-  gradient.addColorStop(1, '#DCCBEA')
-  ctx.fillStyle = gradient
-  ctx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2)
-  ctx.fillStyle = '#B58CA7'
-  ctx.beginPath()
-  ctx.ellipse(cx, cy - radius * 0.2, radius * 0.28, radius * 0.34, 0, 0, Math.PI * 2)
-  ctx.fill()
-  ctx.fillStyle = '#8D6D8D'
-  ctx.beginPath()
-  ctx.ellipse(cx, cy + radius * 0.66, radius * 0.62, radius * 0.52, 0, Math.PI, Math.PI * 2)
-  ctx.fill()
-  ctx.fillStyle = '#FFF9FC'
-  ctx.font = '500 25px sans-serif'
-  ctx.textAlign = 'center'
-  ctx.fillText('上載照片', cx, cy + radius * 0.86)
+function drawPlaceholderPhoto(ctx: CanvasRenderingContext2D, image: HTMLImageElement, cx: number, cy: number, radius: number) {
+  const scale = Math.max((radius * 2) / image.naturalWidth, (radius * 2) / image.naturalHeight)
+  const width = image.naturalWidth * scale
+  const height = image.naturalHeight * scale
+  ctx.drawImage(image, cx - width / 2, cy - height / 2, width, height)
 }
 
-function drawPhoto(ctx: CanvasRenderingContext2D, photo: PhotoTransform) {
+async function drawPhoto(ctx: CanvasRenderingContext2D, photo: PhotoTransform, options: RenderOptions) {
   const { cx, cy, radius } = PHOTO_CIRCLE
   ctx.save()
   ctx.beginPath()
   ctx.arc(cx, cy, radius, 0, Math.PI * 2)
   ctx.clip()
   if (!photo.image) {
-    drawPlaceholderPhoto(ctx, cx, cy, radius)
+    try {
+      const image = await loadImage(DEFAULT_ICON_SRC)
+      if (!options.shouldCancel?.()) drawPlaceholderPhoto(ctx, image, cx, cy, radius)
+    } catch (error) {
+      options.onAssetError?.(DEFAULT_ICON_SRC, error)
+    }
     ctx.restore()
     return
   }
@@ -138,7 +131,8 @@ export async function renderIcon(
     if (options.shouldCancel?.()) { ctx.restore(); return }
   }
   // Photo is always drawn in both export modes; only the background is optional.
-  drawPhoto(ctx, config.photo)
+  await drawPhoto(ctx, config.photo, options)
+  if (options.shouldCancel?.()) { ctx.restore(); return }
   for (const asset of [config.metal, config.secondary, config.primary, config.character, config.ribbon, config.jewel]) {
     await drawAsset(ctx, asset, options)
     if (options.shouldCancel?.()) { ctx.restore(); return }
