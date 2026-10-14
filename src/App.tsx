@@ -20,6 +20,21 @@ type SelectionState = {
   colour: (typeof assetManifest.colours)[number]
 }
 type VisibilityState = Record<SelectableLayer, boolean> & { colour: boolean }
+type CustomizationSnapshot = {
+  selections: SelectionState
+  visible: VisibilityState
+}
+
+const defaultVisibility: VisibilityState = {
+  jewel: true,
+  ribbon: true,
+  character: true,
+  metal: true,
+  secondary: true,
+  primary: true,
+  pattern: true,
+  colour: true,
+}
 
 const layerLabels: Record<(typeof layerOrderBottomToTop)[number], string> = {
   colour: '純色背景',
@@ -63,16 +78,8 @@ function App() {
   const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false)
   const [exportPreview, setExportPreview] = useState('')
   const [selections, setSelections] = useState<SelectionState>(defaultSelections)
-  const [visible, setVisible] = useState<VisibilityState>({
-    jewel: true,
-    ribbon: true,
-    character: true,
-    metal: true,
-    secondary: true,
-    primary: true,
-    pattern: true,
-    colour: true,
-  })
+  const [visible, setVisible] = useState<VisibilityState>(defaultVisibility)
+  const [undoSnapshot, setUndoSnapshot] = useState<CustomizationSnapshot | null>(null)
   const [photo, setPhoto] = useState<RenderConfig['photo']>({ image: null, zoom: 1, rotation: 0, offsetX: 0, offsetY: 0 })
   const [photoFileName, setPhotoFileName] = useState('')
   const [photoError, setPhotoError] = useState('')
@@ -248,9 +255,11 @@ function App() {
 
   const chooseAsset = (layer: SelectableLayer, asset: AssetVariant) => {
     setSelections((current) => ({ ...current, [layer]: asset }))
+    setUndoSnapshot(null)
   }
 
   const toggleLayer = (layer: SelectableLayer | 'colour') => {
+    setUndoSnapshot(null)
     setVisible((current) => {
       const nextValue = !current[layer]
       if (layer === 'colour' && !nextValue) {
@@ -259,6 +268,43 @@ function App() {
       }
       return { ...current, [layer]: nextValue }
     })
+  }
+
+  const randomizeSettings = () => {
+    const chooseRandom = <T,>(items: readonly T[]) => items[Math.floor(Math.random() * items.length)]
+    const patternChoice = Math.floor(Math.random() * (assetManifest.pattern.length + 1))
+    const pattern = assetManifest.pattern[patternChoice] ?? chooseRandom(assetManifest.pattern)
+
+    setUndoSnapshot({ selections, visible })
+    setSelections({
+      jewel: chooseRandom(assetManifest.jewel),
+      ribbon: chooseRandom(assetManifest.ribbon),
+      character: chooseRandom(assetManifest.character),
+      metal: chooseRandom(assetManifest.metal),
+      secondary: chooseRandom(assetManifest.secondary),
+      primary: chooseRandom(assetManifest.primary),
+      pattern,
+      colour: chooseRandom(assetManifest.colours),
+    })
+    setVisible({
+      ...defaultVisibility,
+      pattern: patternChoice < assetManifest.pattern.length,
+    })
+  }
+
+  const undoRandomize = () => {
+    if (!undoSnapshot) return
+    setSelections(undoSnapshot.selections)
+    setVisible(undoSnapshot.visible)
+    setUndoSnapshot(null)
+  }
+
+  const resetEditor = () => {
+    setSelections(defaultSelections)
+    setVisible(defaultVisibility)
+    setCategoryTab({ 1: 'jewel', 3: 'primary', 4: 'colour' })
+    setUndoSnapshot(null)
+    removePhoto()
   }
 
   const selectedAsset = (layer: SelectableLayer) => selections[layer]
@@ -299,8 +345,9 @@ function App() {
               <h2>你的寶石頭像</h2>
             </div>
             <div className="preview-header-actions">
-              <button type="button" className="preview-utility-button">隨機</button>
-              <button type="button" className="preview-utility-button">重設</button>
+              {undoSnapshot && <button type="button" className="preview-utility-button" onClick={undoRandomize}>復原</button>}
+              <button type="button" className="preview-utility-button" onClick={randomizeSettings}>隨機</button>
+              <button type="button" className="preview-utility-button" onClick={resetEditor}>重設</button>
             </div>
           </div>
 
@@ -378,7 +425,10 @@ function App() {
                   key={colour.id}
                   className={`colour-swatch ${selections.colour.id === colour.id ? 'is-selected' : ''}`}
                   style={{ '--swatch': colour.value } as CSSProperties}
-                  onClick={() => setSelections((current) => ({ ...current, colour }))}
+                  onClick={() => {
+                    setSelections((current) => ({ ...current, colour }))
+                    setUndoSnapshot(null)
+                  }}
                   aria-label={`${colour.label} ${colour.value}`}
                   aria-pressed={selections.colour.id === colour.id}
                   title={`${colour.label} · ${colour.value}`}
@@ -462,9 +512,7 @@ function App() {
             {exportError && <p className="inline-error" role="alert">下載未能完成：{exportError}</p>}
             <div className="completion-modal-actions">
               <button type="button" className="wizard-button wizard-button-primary" onClick={() => {
-                setSelections(defaultSelections)
-                setVisible({ jewel: true, ribbon: true, character: true, metal: true, secondary: true, primary: true, pattern: true, colour: true })
-                removePhoto()
+                resetEditor()
                 setActiveStep(0)
                 setExportError('')
                 setIsCompletionModalOpen(false)
