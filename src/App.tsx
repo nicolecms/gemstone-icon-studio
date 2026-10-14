@@ -268,6 +268,12 @@ function App() {
         </div>
 
         <aside className="controls-column">
+          <div className="sidebar-heading">
+            <div><p className="eyebrow">自訂你的頭像</p><h2>{wizardSteps[activeStep].title}</h2>
+              {activeStep === 4 && <p className="sidebar-instruction">可關閉此層顯示，以導出透明背景圖片</p>}
+            </div>
+            <span className="step-count">{activeStep + 1}/{wizardSteps.length}</span>
+          </div>
           <nav className="wizard-progress" aria-label="自訂步驟">
             {wizardSteps.map((step, index) => (
               <button
@@ -282,12 +288,7 @@ function App() {
               </button>
             ))}
           </nav>
-          <div className="sidebar-heading">
-            <div><p className="eyebrow">自訂你的頭像</p><h2>{wizardSteps[activeStep].title}</h2>
-              {activeStep === 4 && <p className="sidebar-instruction">可關閉此層顯示，以導出透明背景圖片</p>}
-            </div>
-            <span className="step-count">{activeStep + 1}/{wizardSteps.length}</span>
-          </div>
+          <div className="picker-scroll">
           {[1, 3, 4].includes(activeStep) && <div className="category-tabs" role="tablist" aria-label="選擇類別">
             {(activeStep === 1 ? [{ key: 'jewel', label: '寶石' }, { key: 'ribbon', label: '蝴蝶結' }] : activeStep === 3 ? [{ key: 'primary', label: '主色' }, { key: 'secondary', label: '副色' }, { key: 'metal', label: '金屬配件' }] : [{ key: 'colour', label: '顏色' }, { key: 'pattern', label: '圖案' }]).map((tab) => {
               const disabled = activeStep === 4 && tab.key === 'pattern' && !visible.colour
@@ -381,6 +382,7 @@ function App() {
               </section>
             )
           })}
+          </div>
           <div className="wizard-navigation">
             <button type="button" className="wizard-icon-button wizard-button-secondary" aria-label="上一步" title="上一步" disabled={activeStep === 0} onClick={() => goToStep(activeStep - 1)}>‹</button>
             {activeStep < wizardSteps.length - 1 ? <button type="button" className="wizard-icon-button wizard-button-primary" aria-label="下一步" title="下一步" onClick={() => goToStep(activeStep + 1)}>›</button> : <button type="button" className="wizard-icon-button wizard-button-primary" aria-label="下載 PNG" title="下載 PNG" disabled={isExporting} onClick={handleDownload}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 16v4h14v-4" /></svg></button>}
