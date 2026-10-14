@@ -758,7 +758,7 @@
 .sidebar-heading .eyebrow { margin-bottom: 5px; }
 .sidebar-heading h2 { margin: 0; color: #403746; font-family: 'Playfair Display', serif; font-size: 23px; font-weight: 500; letter-spacing: -.3px; }
 .sidebar-instruction { margin: 7px 0 0; color: #8d818d; font-size: 12px; line-height: 20px; }
-.category-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+.category-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
 .category-tab {
   padding: 7px 12px;
   border: 1px solid #e7dce9;

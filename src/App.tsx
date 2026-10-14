@@ -226,12 +226,6 @@ function App() {
         <span className="topbar-note">與BB們齊手打造獨一無二的寶石頭像</span>
       </header>
 
-      <section className="intro">
-        <p className="eyebrow">你的圖示，由你創作</p>
-        <h1>為日常添一點<span>寶石魔法。</span></h1>
-        <p className="intro-copy">選擇喜歡的寶石、角色與配色，即時預覽你的專屬頭像。</p>
-      </section>
-
       <a className="back-home-link" href="" onClick={(event) => event.preventDefault()}><span aria-hidden="true">‹</span> 返回主頁</a>
       <section className="editor" aria-label="圖片自訂工作區">
         <div className="preview-column">
@@ -290,7 +284,7 @@ function App() {
           </nav>
           <div className="picker-scroll">
           {[1, 3, 4].includes(activeStep) && <div className="category-tabs" role="tablist" aria-label="選擇類別">
-            {(activeStep === 1 ? [{ key: 'jewel', label: '寶石' }, { key: 'ribbon', label: '蝴蝶結' }] : activeStep === 3 ? [{ key: 'primary', label: '主色' }, { key: 'secondary', label: '副色' }, { key: 'metal', label: '金屬配件' }] : [{ key: 'colour', label: '顏色' }, { key: 'pattern', label: '圖案' }]).map((tab) => {
+            {(activeStep === 1 ? [{ key: 'jewel', label: '寶石' }, { key: 'ribbon', label: '絲帶' }] : activeStep === 3 ? [{ key: 'primary', label: '主色' }, { key: 'secondary', label: '副色' }, { key: 'metal', label: '金屬配件' }] : [{ key: 'colour', label: '顏色' }, { key: 'pattern', label: '圖案' }]).map((tab) => {
               const disabled = activeStep === 4 && tab.key === 'pattern' && !visible.colour
               return <button key={tab.key} type="button" role="tab" aria-selected={categoryTab[activeStep] === tab.key} disabled={disabled} className={`category-tab ${categoryTab[activeStep] === tab.key ? 'is-active' : ''}`} onClick={() => setCategoryTab((current) => ({ ...current, [activeStep]: tab.key }))}>{tab.label}</button>
             })}
