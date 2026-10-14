@@ -53,6 +53,8 @@ const pickerSections: { key: SelectableLayer; title: string; hint: string }[] = 
 
 function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const previewColumnRef = useRef<HTMLDivElement>(null)
+  const controlsColumnRef = useRef<HTMLElement>(null)
   const [activeStep, setActiveStep] = useState(0)
   const [categoryTab, setCategoryTab] = useState<Record<number, string>>({ 1: 'jewel', 3: 'primary', 4: 'colour' })
   const [completionMessage, setCompletionMessage] = useState('')
@@ -120,6 +122,30 @@ function App() {
 
     return () => { cancelled = true }
   }, [config, handleAssetError])
+
+  useEffect(() => {
+    const previewColumn = previewColumnRef.current
+    const controlsColumn = controlsColumnRef.current
+    if (!previewColumn || !controlsColumn) return
+
+    const syncPanelHeight = () => {
+      if (window.matchMedia('(min-width: 901px)').matches) {
+        controlsColumn.style.setProperty('--matched-panel-height', `${previewColumn.getBoundingClientRect().height}px`)
+      } else {
+        controlsColumn.style.removeProperty('--matched-panel-height')
+      }
+    }
+
+    const observer = new ResizeObserver(syncPanelHeight)
+    observer.observe(previewColumn)
+    window.addEventListener('resize', syncPanelHeight)
+    syncPanelHeight()
+
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', syncPanelHeight)
+    }
+  }, [])
 
 
   const uploadPhoto = (file?: File) => {
@@ -228,7 +254,7 @@ function App() {
 
       <a className="back-home-link" href="" onClick={(event) => event.preventDefault()}><span aria-hidden="true">‹</span> 返回主頁</a>
       <section className="editor" aria-label="圖片自訂工作區">
-        <div className="preview-column">
+        <div className="preview-column" ref={previewColumnRef}>
           <div className="section-heading preview-heading">
             <div>
               <p className="eyebrow">即時預覽</p>
@@ -261,7 +287,7 @@ function App() {
 
         </div>
 
-        <aside className="controls-column">
+        <aside className="controls-column" ref={controlsColumnRef}>
           <div className="sidebar-heading">
             <div><p className="eyebrow">自訂你的頭像</p><h2>{wizardSteps[activeStep].title}</h2>
               {activeStep === 4 && <p className="sidebar-instruction">可關閉此層顯示，以導出透明背景圖片</p>}
@@ -282,13 +308,14 @@ function App() {
               </button>
             ))}
           </nav>
-          <div className="picker-scroll">
           {[1, 3, 4].includes(activeStep) && <div className="category-tabs" role="tablist" aria-label="選擇類別">
             {(activeStep === 1 ? [{ key: 'jewel', label: '寶石' }, { key: 'ribbon', label: '絲帶' }] : activeStep === 3 ? [{ key: 'primary', label: '主色' }, { key: 'secondary', label: '副色' }, { key: 'metal', label: '金屬配件' }] : [{ key: 'colour', label: '顏色' }, { key: 'pattern', label: '圖案' }]).map((tab) => {
               const disabled = activeStep === 4 && tab.key === 'pattern' && !visible.colour
               return <button key={tab.key} type="button" role="tab" aria-selected={categoryTab[activeStep] === tab.key} disabled={disabled} className={`category-tab ${categoryTab[activeStep] === tab.key ? 'is-active' : ''}`} onClick={() => setCategoryTab((current) => ({ ...current, [activeStep]: tab.key }))}>{tab.label}</button>
             })}
           </div>}
+          <div className="picker-divider" aria-hidden="true" />
+          <div className="picker-scroll">
           {activeStep === 0 && (
             <section className="photo-tools" aria-label="照片編輯">
               <h3>上載及編輯照片</h3>

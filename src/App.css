@@ -269,10 +269,6 @@
 
 
 /* Interactive asset pickers */
-.picker-section {
-  padding: 18px 0;
-  border-top: 1px solid var(--line);
-}
 .picker-title-row {
   display: flex;
   align-items: flex-start;
@@ -758,7 +754,18 @@
 .sidebar-heading .eyebrow { margin-bottom: 5px; }
 .sidebar-heading h2 { margin: 0; color: #403746; font-family: 'Playfair Display', serif; font-size: 23px; font-weight: 500; letter-spacing: -.3px; }
 .sidebar-instruction { margin: 7px 0 0; color: #8d818d; font-size: 12px; line-height: 20px; }
-.category-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.category-tabs {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.picker-divider {
+  flex: 0 0 auto;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
 .category-tab {
   padding: 7px 12px;
   border: 1px solid #e7dce9;
@@ -803,11 +810,12 @@
 
 /* Editor panel sizing and fixed wizard actions */
 @media (min-width: 901px) {
-  .editor { align-items: stretch; }
+  .editor { align-items: start; }
   .preview-column, .controls-column { box-sizing: border-box; }
   .controls-column {
     display: flex;
     flex-direction: column;
+    height: var(--matched-panel-height, auto);
     min-height: 0;
   }
   .sidebar-heading,
