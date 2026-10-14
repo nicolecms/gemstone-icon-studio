@@ -799,3 +799,36 @@
   .preview-utility-button { padding: 8px 9px; }
   .sidebar-heading h2 { font-size: 21px; }
 }
+
+
+/* Editor panel sizing and fixed wizard actions */
+@media (min-width: 901px) {
+  .editor { align-items: stretch; }
+  .preview-column, .controls-column { box-sizing: border-box; }
+  .controls-column {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .sidebar-heading,
+  .wizard-progress { flex: 0 0 auto; }
+  .wizard-progress { margin: 16px 0 18px; }
+  .picker-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    scrollbar-width: thin;
+    padding-right: 8px;
+    margin-right: -8px;
+  }
+  .wizard-navigation {
+    flex: 0 0 auto;
+    justify-content: flex-end;
+    margin-top: 0;
+  }
+}
+@media (max-width: 900px) {
+  .controls-column { height: auto; }
+  .picker-scroll { overflow: visible; }
+}
