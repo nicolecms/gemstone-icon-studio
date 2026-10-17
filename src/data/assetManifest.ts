@@ -77,7 +77,7 @@ export const assetManifest = {
     count: 14,
     labels: gemstoneNames
   }),
-  pattern: numberedAssets({ folder: 'pattern', count: 2, labels: ['圖案 1', '圖案 2'] }),
+  pattern: numberedAssets({ folder: 'pattern', count: 2, labels: ['格紋', '波點'] }),
   colours: [
     { id: 'colour-01', label: '石榴粉', value: '#F4D7E8' },
     { id: 'colour-02', label: '紫水晶', value: '#DAC8EC' },
