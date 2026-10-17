@@ -7,6 +7,8 @@ import {
 } from './data/assetManifest'
 import { renderIcon, type RenderConfig } from './engine/renderIcon'
 import './App.css'
+import HomePage from './pages/HomePage'
+import PresetPage from './pages/PresetPage'
 
 type SelectableLayer = 'jewel' | 'ribbon' | 'character' | 'metal' | 'secondary' | 'primary' | 'pattern'
 type SelectionState = {
@@ -76,6 +78,8 @@ function App() {
   const [activeStep, setActiveStep] = useState(0)
   const [categoryTab, setCategoryTab] = useState<Record<number, string>>({ 1: 'jewel', 3: 'primary', 4: 'colour' })
   const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false)
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false)
+  const [exportStage, setExportStage] = useState<'preview' | 'animating' | 'downloaded'>('preview')
   const [exportPreview, setExportPreview] = useState('')
   const [selections, setSelections] = useState<SelectionState>(defaultSelections)
   const [visible, setVisible] = useState<VisibilityState>(defaultVisibility)
@@ -223,7 +227,7 @@ function App() {
   }
   const stopCanvasDrag = () => { dragRef.current = null }
 
-  const exportPng = async () => {
+  const exportPng = async (): Promise<boolean> => {
     setIsExporting(true)
     setExportError('')
     try {
@@ -245,9 +249,11 @@ function App() {
       document.body.appendChild(link)
       link.click()
       link.remove()
-      URL.revokeObjectURL(url)
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+      return true
     } catch (error) {
       setExportError(error instanceof Error ? error.message : '匯出失敗，請再試一次。')
+      return false
     } finally {
       setIsExporting(false)
     }
@@ -305,6 +311,8 @@ function App() {
     setCategoryTab({ 1: 'jewel', 3: 'primary', 4: 'colour' })
     setUndoSnapshot(null)
     removePhoto()
+    setActiveStep(0)
+    setIsResetModalOpen(false)
   }
 
   const selectedAsset = (layer: SelectableLayer) => selections[layer]
@@ -322,9 +330,20 @@ function App() {
   const handleDownload = () => {
     setExportError('')
     setExportPreview(canvasRef.current?.toDataURL('image/png') ?? '')
+    setExportStage('preview')
     setIsCompletionModalOpen(true)
-    void exportPng()
   }
+
+  const confirmExport = () => setExportStage('animating')
+  const finishEnvelopeAnimation = async () => {
+    if (exportStage !== 'animating') return
+    const success = await exportPng()
+    if (success) setExportStage('downloaded')
+    else setExportStage('preview')
+  }
+
+  if (window.location.pathname === '/presets') return <PresetPage />
+  if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') return <HomePage />
 
   return (
     <main className="studio" lang="zh-Hant">
@@ -336,7 +355,7 @@ function App() {
         <span className="topbar-note">與BB們齊手打造獨一無二的寶石頭像</span>
       </header>
 
-      <a className="back-home-link" href="" onClick={(event) => event.preventDefault()}><span aria-hidden="true">‹</span> 返回主頁</a>
+      <a className="back-home-link" href="/"><span aria-hidden="true">‹</span> 返回主頁</a>
       <section className="editor" aria-label="圖片自訂工作區">
         <div className="preview-column" ref={previewColumnRef}>
           <div className="section-heading preview-heading">
@@ -347,7 +366,7 @@ function App() {
             <div className="preview-header-actions">
               {undoSnapshot && <button type="button" className="preview-utility-button" onClick={undoRandomize}>復原</button>}
               <button type="button" className="preview-utility-button" onClick={randomizeSettings}>隨機</button>
-              <button type="button" className="preview-utility-button" onClick={resetEditor}>重設</button>
+              <button type="button" className="preview-utility-button" onClick={() => setIsResetModalOpen(true)}>重設</button>
             </div>
           </div>
 
@@ -500,25 +519,44 @@ function App() {
         <span>用一點閃耀，創作屬於你的故事 ✧</span>
         <span>BB寶石工作坊 · 開發預覽版</span>
       </footer>
+      {isResetModalOpen && (
+        <div className="completion-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setIsResetModalOpen(false) }}>
+          <section className="completion-modal reset-confirmation" role="dialog" aria-modal="true" aria-labelledby="reset-modal-title">
+            <button type="button" className="completion-modal-close" aria-label="關閉確認視窗" onClick={() => setIsResetModalOpen(false)}>×</button>
+            <p className="eyebrow">START FRESH</p>
+            <h2 id="reset-modal-title">確定要重新開始嗎？</h2>
+            <p className="completion-modal-copy">此操作會清除目前所有自訂設定及已上載的照片，並返回第一步。重設後將無法復原。</p>
+            <div className="completion-modal-actions">
+              <button type="button" className="wizard-button wizard-button-primary" onClick={resetEditor}>確定重設</button>
+              <button type="button" className="wizard-button wizard-button-secondary" onClick={() => setIsResetModalOpen(false)}>返回編輯</button>
+            </div>
+          </section>
+        </div>
+      )}
       {isCompletionModalOpen && (
-        <div className="completion-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setIsCompletionModalOpen(false) }}>
-          <section className="completion-modal" role="dialog" aria-modal="true" aria-labelledby="completion-modal-title">
-            <button type="button" className="completion-modal-close" aria-label="關閉完成提示" onClick={() => setIsCompletionModalOpen(false)}>×</button>
+        <div className="completion-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && exportStage !== 'animating') setIsCompletionModalOpen(false) }}>
+          <section className={`completion-modal ${exportStage === 'animating' ? 'is-envelope-animation' : ''}`} role="dialog" aria-modal="true" aria-labelledby="completion-modal-title">
+            {exportStage !== 'animating' && <button type="button" className="completion-modal-close" aria-label="關閉完成提示" onClick={() => setIsCompletionModalOpen(false)}>×</button>}
             <p className="eyebrow">YOUR GEMSTONE IS READY</p>
-            <h2 id="completion-modal-title">製作完成！</h2>
-            <p className="completion-modal-copy">PNG 下載已開始！是張非常可愛的頭像呢 ♪</p>
-            {exportPreview && <img className="completion-preview" src={exportPreview} alt="剛完成的寶石圖示預覽" />}
+            <h2 id="completion-modal-title">{exportStage === 'downloaded' ? '魔法送達！' : exportStage === 'animating' ? '正在施展魔法…' : '預覽你的寶石頭像'}</h2>
+            <p className="completion-modal-copy">{exportStage === 'downloaded' ? '已開始下載你的 PNG 頭像！願這份小小的閃耀陪伴你 ♪' : exportStage === 'animating' ? '把你的專屬寶石好好封存，準備寄出…' : '確認這是你想帶走的模樣嗎？確認後即可下載 PNG。'}</p>
+            {exportStage === 'animating' ? (
+              <div className="envelope-animation" onAnimationEnd={(event) => { if (event.animationName === 'envelope-fly-away') void finishEnvelopeAnimation() }} aria-label="寶石頭像正在被封進信封並施展魔法">
+                <div className="magic-sparkles" aria-hidden="true">✧　✦　⋆　✧</div>
+                <div className="envelope"><div className="envelope-letter"><span>✧</span></div><div className="envelope-flap" /><div className="envelope-seal">✦</div></div>
+              </div>
+            ) : exportPreview && <img className="completion-preview" src={exportPreview} alt="剛完成的寶石圖示預覽" />}
+            {exportStage === 'downloaded' && <p className="completion-download-status" role="status">下載已開始，你可以繼續創作或返回主頁。</p>}
             {isExporting && <p className="completion-download-status" role="status">正在準備 PNG 檔案…</p>}
             {exportError && <p className="inline-error" role="alert">下載未能完成：{exportError}</p>}
-            <div className="completion-modal-actions">
-              <button type="button" className="wizard-button wizard-button-primary" onClick={() => {
-                resetEditor()
-                setActiveStep(0)
-                setExportError('')
-                setIsCompletionModalOpen(false)
-              }}>再做一張</button>
+            {exportStage === 'preview' && <div className="completion-modal-actions">
+              <button type="button" className="wizard-button wizard-button-primary" onClick={confirmExport}>確認並下載</button>
               <button type="button" className="wizard-button wizard-button-secondary" onClick={() => setIsCompletionModalOpen(false)}>返回編輯</button>
-            </div>
+            </div>}
+            {exportStage === 'downloaded' && <div className="completion-modal-actions">
+              <button type="button" className="wizard-button wizard-button-primary" onClick={() => { resetEditor(); setIsCompletionModalOpen(false); setExportStage('preview') }}>再做一張</button>
+              <a className="wizard-button wizard-button-secondary" href="/">返回主頁</a>
+            </div>}
           </section>
         </div>
       )}
