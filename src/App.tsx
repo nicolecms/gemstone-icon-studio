@@ -9,6 +9,7 @@ import { renderIcon, type RenderConfig } from './engine/renderIcon'
 import './App.css'
 import HomePage from './pages/HomePage'
 import PresetPage from './pages/PresetPage'
+import { getPresetById, getPresetSelections } from './data/presets'
 
 type SelectableLayer = 'jewel' | 'ribbon' | 'character' | 'metal' | 'secondary' | 'primary' | 'pattern'
 type SelectionState = {
@@ -70,6 +71,8 @@ const pickerSections: { key: SelectableLayer; title: string; hint: string }[] = 
 
 function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const exportRequestedRef = useRef(false)
+  const queryPreset = getPresetById(new URLSearchParams(window.location.search).get('preset'))
   const previewColumnRef = useRef<HTMLDivElement>(null)
   const controlsColumnRef = useRef<HTMLElement>(null)
   const photoInputRef = useRef<HTMLInputElement>(null)
@@ -81,7 +84,7 @@ function App() {
   const [isResetModalOpen, setIsResetModalOpen] = useState(false)
   const [exportStage, setExportStage] = useState<'preview' | 'animating' | 'downloaded'>('preview')
   const [exportPreview, setExportPreview] = useState('')
-  const [selections, setSelections] = useState<SelectionState>(defaultSelections)
+  const [selections, setSelections] = useState<SelectionState>(() => queryPreset ? getPresetSelections(queryPreset) : defaultSelections)
   const [visible, setVisible] = useState<VisibilityState>(defaultVisibility)
   const [undoSnapshot, setUndoSnapshot] = useState<CustomizationSnapshot | null>(null)
   const [photo, setPhoto] = useState<RenderConfig['photo']>({ image: null, zoom: 1, rotation: 0, offsetX: 0, offsetY: 0 })
@@ -264,16 +267,9 @@ function App() {
     setUndoSnapshot(null)
   }
 
-  const toggleLayer = (layer: SelectableLayer | 'colour') => {
+  const toggleLayer = (layer: 'colour' | 'pattern') => {
     setUndoSnapshot(null)
-    setVisible((current) => {
-      const nextValue = !current[layer]
-      if (layer === 'colour' && !nextValue) {
-        setCategoryTab((tabs) => ({ ...tabs, 4: 'colour' }))
-        return { ...current, colour: false, pattern: false }
-      }
-      return { ...current, [layer]: nextValue }
-    })
+    setVisible((current) => ({ ...current, [layer]: !current[layer] }))
   }
 
   const randomizeSettings = () => {
@@ -326,6 +322,15 @@ function App() {
     if (activeStep === 4) return key === 'pattern' && categoryTab[4] === 'pattern' && visible.colour
     return false
   })
+
+  useEffect(() => {
+    if (window.location.pathname !== '/editor' || new URLSearchParams(window.location.search).get('export') !== '1' || isRendering || exportRequestedRef.current) return
+    exportRequestedRef.current = true
+    setExportError('')
+    setExportPreview(canvasRef.current?.toDataURL('image/png') ?? '')
+    setExportStage('preview')
+    setIsCompletionModalOpen(true)
+  }, [isRendering])
 
   const handleDownload = () => {
     setExportError('')
@@ -394,13 +399,13 @@ function App() {
         <aside className="controls-column" ref={controlsColumnRef}>
           <div className="sidebar-heading">
             <div><p className="eyebrow">自訂你的頭像</p><h2>{wizardStepTitles[activeStep]}</h2>
-              {activeStep === 4 && <p className="sidebar-instruction">可關閉此層顯示，以導出透明背景圖片</p>}
+              {activeStep === 4 && <p className="sidebar-instruction">可分別隱藏背景顏色或圖案，打造透明或簡約背景</p>}
             </div>
             <span className="step-count">{activeStep + 1}/{wizardStepTitles.length}</span>
           </div>
           {[1, 3, 4].includes(activeStep) && <div className="category-tabs" role="tablist" aria-label="選擇類別">
             {(activeStep === 1 ? [{ key: 'jewel', label: '寶石' }, { key: 'ribbon', label: '絲帶' }] : activeStep === 3 ? [{ key: 'primary', label: '主色' }, { key: 'secondary', label: '副色' }, { key: 'metal', label: '金屬配件' }] : [{ key: 'colour', label: '顏色' }, { key: 'pattern', label: '圖案' }]).map((tab) => {
-              const disabled = activeStep === 4 && tab.key === 'pattern' && !visible.colour
+              const disabled = false
               return <button key={tab.key} type="button" role="tab" aria-selected={categoryTab[activeStep] === tab.key} disabled={disabled} className={`category-tab ${categoryTab[activeStep] === tab.key ? 'is-active' : ''}`} onClick={() => setCategoryTab((current) => ({ ...current, [activeStep]: tab.key }))}>{tab.label}</button>
             })}
           </div>}
@@ -437,7 +442,7 @@ function App() {
           {activeStep === 4 && categoryTab[4] === 'colour' && <section className="picker-section">
             <div className="picker-title-row">
               <div><h3>顏色</h3></div>
-              <label className="mini-toggle" title={visible.colour ? '隱藏純色背景' : '顯示純色背景'}>
+              <label className="mini-toggle" title={visible.colour ? '隱藏背景顏色' : '顯示背景顏色'}>
                 <input type="checkbox" checked={visible.colour} onChange={() => toggleLayer('colour')} />
                 <span>{visible.colour ? '顯示' : '隱藏'}</span>
               </label>
@@ -467,10 +472,10 @@ function App() {
               <section className="picker-section" key={key}>
                 <div className="picker-title-row">
                   <div><h3>{title}</h3></div>
-                  <label className="mini-toggle" title={visible[key] ? `隱藏${title}` : `顯示${title}`}>
-                    <input type="checkbox" checked={visible[key]} onChange={() => toggleLayer(key)} />
-                    <span>{visible[key] ? '顯示' : '隱藏'}</span>
-                  </label>
+                  {key === 'pattern' && <label className="mini-toggle" title={visible.pattern ? '隱藏背景圖案' : '顯示背景圖案'}>
+                    <input type="checkbox" checked={visible.pattern} onChange={() => toggleLayer('pattern')} />
+                    <span>{visible.pattern ? '顯示' : '隱藏'}</span>
+                  </label>}
                 </div>
                 {key === 'secondary' ? (
                   <div className="secondary-options" role="group" aria-label="選擇次要框顏色">
