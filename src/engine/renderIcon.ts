@@ -28,6 +28,8 @@ export type RenderOptions = {
 }
 
 const imageCache = new Map<string, HTMLImageElement>()
+const canvasRenderIds = new WeakMap<HTMLCanvasElement, number>()
+let nextCanvasRenderId = 0
 const SIZE = 1024
 const DEFAULT_ICON_SRC = '/assets/default-icon.PNG'
 // Given mask: 856px diameter on a 1080px canvas, with asymmetric padding.
@@ -72,21 +74,27 @@ function drawPlaceholderPhoto(ctx: CanvasRenderingContext2D, image: HTMLImageEle
 
 async function drawPhoto(ctx: CanvasRenderingContext2D, photo: PhotoTransform, options: RenderOptions) {
   const { cx, cy, radius } = PHOTO_CIRCLE
+  let image = photo.image
+  if (!photo.image) {
+    try {
+      image = await loadImage(DEFAULT_ICON_SRC)
+    } catch (error) {
+      options.onAssetError?.(DEFAULT_ICON_SRC, error)
+      return
+    }
+  }
+
+  if (!image || options.shouldCancel?.()) return
   ctx.save()
   ctx.beginPath()
   ctx.arc(cx, cy, radius, 0, Math.PI * 2)
   ctx.clip()
   if (!photo.image) {
-    try {
-      const image = await loadImage(DEFAULT_ICON_SRC)
-      if (!options.shouldCancel?.()) drawPlaceholderPhoto(ctx, image, cx, cy, radius)
-    } catch (error) {
-      options.onAssetError?.(DEFAULT_ICON_SRC, error)
-    }
+    drawPlaceholderPhoto(ctx, image, cx, cy, radius)
     ctx.restore()
     return
   }
-  const image = photo.image
+
   const fitScale = Math.max((radius * 2) / image.naturalWidth, (radius * 2) / image.naturalHeight)
   const scale = fitScale * Math.max(0.25, Math.min(photo.zoom, 5))
   ctx.translate(cx + photo.offsetX, cy + photo.offsetY)
@@ -112,30 +120,31 @@ export async function renderIcon(
   config: RenderConfig,
   options: RenderOptions = {},
 ): Promise<void> {
+  const renderId = ++nextCanvasRenderId
+  canvasRenderIds.set(canvas, renderId)
+  const shouldCancel = () => canvasRenderIds.get(canvas) !== renderId || options.shouldCancel?.() === true
+  const renderOptions = { ...options, shouldCancel }
   const size = options.size ?? SIZE
   const includeBackground = options.includeBackground ?? true
   canvas.width = size
   canvas.height = size
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('此瀏覽器無法建立 Canvas 2D 繪圖環境。')
-  ctx.clearRect(0, 0, size, size)
-  ctx.save()
-  ctx.scale(size / SIZE, size / SIZE)
-  if (options.shouldCancel?.()) { ctx.restore(); return }
+  ctx.setTransform(size / SIZE, 0, 0, size / SIZE, 0, 0)
+  if (shouldCancel()) return
   if (includeBackground) {
     if (config.colour) {
       ctx.fillStyle = config.colour.value
       ctx.fillRect(0, 0, SIZE, SIZE)
     }
-    await drawAsset(ctx, config.pattern, options)
-    if (options.shouldCancel?.()) { ctx.restore(); return }
+    await drawAsset(ctx, config.pattern, renderOptions)
+    if (shouldCancel()) return
   }
   // Photo is always drawn in both export modes; only the background is optional.
-  await drawPhoto(ctx, config.photo, options)
-  if (options.shouldCancel?.()) { ctx.restore(); return }
+  await drawPhoto(ctx, config.photo, renderOptions)
+  if (shouldCancel()) return
   for (const asset of [config.metal, config.secondary, config.primary, config.character, config.ribbon, config.jewel]) {
-    await drawAsset(ctx, asset, options)
-    if (options.shouldCancel?.()) { ctx.restore(); return }
+    await drawAsset(ctx, asset, renderOptions)
+    if (shouldCancel()) return
   }
-  ctx.restore()
 }
