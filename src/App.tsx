@@ -389,7 +389,6 @@ function App() {
         <span className="topbar-note">與BB們齊手打造獨一無二的寶石頭像</span>
       </header>
 
-      <a className="back-home-link" href="/"><span aria-hidden="true">‹</span> 返回主頁</a>
       <section className="editor" aria-label="圖片自訂工作區">
         <div className="preview-column" ref={previewColumnRef}>
           <div className="section-heading preview-heading">
@@ -549,7 +548,7 @@ function App() {
           <div className="wizard-navigation">
             <div className="wizard-navigation-actions">
               <button type="button" className="wizard-icon-button wizard-button-secondary" aria-label="上一步" title="上一步" disabled={activeStep === 0} onClick={() => goToStep(activeStep - 1)}>‹</button>
-              {activeStep < wizardStepTitles.length - 1 ? <button type="button" className="wizard-icon-button wizard-button-primary" aria-label="下一步" title="下一步" onClick={() => goToStep(activeStep + 1)}>›</button> : <button type="button" className="wizard-icon-button wizard-button-primary" aria-label="下載 PNG" title="下載 PNG" disabled={isExporting} onClick={handleDownload}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 16v4h14v-4" /></svg></button>}
+              {activeStep < wizardStepTitles.length - 1 ? <button type="button" className="wizard-icon-button wizard-button-primary" aria-label="下一步" title="下一步" onClick={() => goToStep(activeStep + 1)}>{activeStep === 0 ? "✓" : "›"}</button> : <button type="button" className="wizard-icon-button wizard-button-primary" aria-label="下載 PNG" title="下載 PNG" disabled={isExporting} onClick={handleDownload}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 16v4h14v-4" /></svg></button>}
             </div>
           </div>
         </aside>
