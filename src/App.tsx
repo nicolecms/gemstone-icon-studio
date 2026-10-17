@@ -343,7 +343,7 @@ function App() {
   }
 
   if (window.location.pathname === '/presets') return <PresetPage />
-  if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') return <HomePage />
+  if (window.location.pathname !== '/editor') return <HomePage />
 
   return (
     <main className="studio" lang="zh-Hant">
