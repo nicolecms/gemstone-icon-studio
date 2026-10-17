@@ -133,7 +133,6 @@ export default function PresetPage() {
         <a className="wordmark" href="/" aria-label="BB寶石工作坊首頁"><span className="wordmark-gem" aria-hidden="true">✧</span><span>BB寶石 <span className="wordmark-light">工作坊</span></span></a>
         <span className="topbar-note">與BB們齊手打造獨一無二的寶石頭像</span>
       </header>
-      <a className="back-home-link" href="/"><span aria-hidden="true">‹</span> 返回主頁</a>
 
       <section className={`editor preset-editor ${step === 1 ? 'preset-photo-step' : 'preset-choice-step'}`} aria-label="預設款式選擇工作區">
         <div className={'preview-column preset-preview-column ' + (isCustom ? 'is-dimmed' : '')}>
@@ -181,8 +180,8 @@ export default function PresetPage() {
             )}
           </div>
           <div className="preset-actions">
-            {step === 1 ? <><button type="button" className="wizard-button wizard-button-secondary" onClick={() => { if (photo.image) void persistPhoto(photo, photoFileName); window.location.href = '/' }}>返回主頁</button><button type="button" className="wizard-button wizard-button-primary preset-tick-button" aria-label="下一步" onClick={() => { if (photo.image) void persistPhoto(photo, photoFileName); setStep(2); setSheetExpanded(false) }}><span aria-hidden="true">✓</span></button></> :
-              <><button type="button" className="wizard-button wizard-button-secondary" onClick={() => setStep(1)}>上一步</button><button type="button" className="wizard-button wizard-button-primary preset-tick-button" aria-label="確認選擇" onClick={() => isCustom ? setIsCustomConfirmOpen(true) : startPresetExport()}><span aria-hidden="true">✓</span></button></>}
+            {step === 1 ? <><button type="button" className="wizard-icon-button wizard-button-secondary" aria-label="返回主頁" title="返回主頁" onClick={() => { if (photo.image) void persistPhoto(photo, photoFileName); window.location.href = '/' }}>‹</button><button type="button" className="wizard-icon-button wizard-button-primary" aria-label="下一步" title="下一步" onClick={() => { if (photo.image) void persistPhoto(photo, photoFileName); setStep(2); setSheetExpanded(false) }}>›</button></> :
+              <><button type="button" className="wizard-icon-button wizard-button-secondary" aria-label="上一步" title="上一步" onClick={() => setStep(1)}>‹</button><button type="button" className="wizard-icon-button wizard-button-primary" aria-label="確認選擇" title="確認選擇" onClick={() => isCustom ? setIsCustomConfirmOpen(true) : startPresetExport()}><span aria-hidden="true">✓</span></button></>}
           </div>
         </aside>
       </section>
