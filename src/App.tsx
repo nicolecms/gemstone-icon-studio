@@ -319,7 +319,7 @@ function App() {
     if (activeStep === 1) return key === categoryTab[1]
     if (activeStep === 2) return key === 'character'
     if (activeStep === 3) return key === categoryTab[3]
-    if (activeStep === 4) return key === 'pattern' && categoryTab[4] === 'pattern' && visible.colour
+    if (activeStep === 4) return key === 'pattern' && categoryTab[4] === 'pattern'
     return false
   })
 
