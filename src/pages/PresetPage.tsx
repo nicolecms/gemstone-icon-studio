@@ -122,7 +122,7 @@ export default function PresetPage() {
   const pointerUp = () => { dragRef.current = null }
 
   const continueToEditor = () => {
-    void persistPhoto(photo, photoFileName).finally(() => { window.location.href = '/editor?preset=' + selected.id + '&step=1' })
+    void persistPhoto(photo, photoFileName).finally(() => { window.location.href = isCustom ? '/editor?step=1' : '/editor?preset=' + selected.id + '&step=1' })
   }
   const confirmPresetExport = () => setIsExportConfirmOpen(true)
   const startPresetExport = () => {
