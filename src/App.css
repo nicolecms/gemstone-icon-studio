@@ -873,3 +873,13 @@
     animation-iteration-count: 1 !important;
   }
 }
+
+.photo-upload-section { padding-bottom:18px; border-bottom:1px solid var(--line); }
+.photo-edit-section { padding-top:18px; }
+.photo-upload-section h3 { margin:0; padding-bottom:16px; border-bottom:0; }
+.photo-edit-section h3 { margin:0; padding-bottom:0; border-bottom:0; }
+.photo-upload-section > .upload-button,
+.photo-upload-section > .uploaded-photo { margin-top:16px; }
+.photo-edit-section .photo-help { margin:7px 0 14px; }
+.photo-edit-section .photo-control { margin:12px 0; }
+.photo-edit-section .photo-actions { margin-top:14px; }
