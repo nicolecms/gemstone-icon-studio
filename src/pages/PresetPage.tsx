@@ -60,7 +60,6 @@ export default function PresetPage() {
   const [photoFileName, setPhotoFileName] = useState('')
   const [photoError, setPhotoError] = useState('')
   const [isCustomConfirmOpen, setIsCustomConfirmOpen] = useState(false)
-  const [isExportConfirmOpen, setIsExportConfirmOpen] = useState(false)
   const [sheetExpanded, setSheetExpanded] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const dragRef = useRef<{ x: number; y: number; offsetX: number; offsetY: number } | null>(null)
@@ -124,7 +123,6 @@ export default function PresetPage() {
   const continueToEditor = () => {
     void persistPhoto(photo, photoFileName).finally(() => { window.location.href = isCustom ? '/editor?step=1' : '/editor?preset=' + selected.id + '&step=1' })
   }
-  const confirmPresetExport = () => setIsExportConfirmOpen(true)
   const startPresetExport = () => {
     void persistPhoto(photo, photoFileName).finally(() => { window.location.href = '/editor?preset=' + selected.id + '&export=1' })
   }
@@ -184,7 +182,7 @@ export default function PresetPage() {
           </div>
           <div className="preset-actions">
             {step === 1 ? <><button type="button" className="wizard-button wizard-button-secondary" onClick={() => { if (photo.image) void persistPhoto(photo, photoFileName); window.location.href = '/' }}>返回主頁</button><button type="button" className="wizard-button wizard-button-primary preset-tick-button" aria-label="下一步" onClick={() => { if (photo.image) void persistPhoto(photo, photoFileName); setStep(2); setSheetExpanded(false) }}><span aria-hidden="true">✓</span></button></> :
-              <><button type="button" className="wizard-button wizard-button-secondary" onClick={() => setStep(1)}>上一步</button><button type="button" className="wizard-button wizard-button-primary preset-tick-button" aria-label="確認選擇" onClick={() => isCustom ? setIsCustomConfirmOpen(true) : confirmPresetExport()}><span aria-hidden="true">✓</span></button></>}
+              <><button type="button" className="wizard-button wizard-button-secondary" onClick={() => setStep(1)}>上一步</button><button type="button" className="wizard-button wizard-button-primary preset-tick-button" aria-label="確認選擇" onClick={() => isCustom ? setIsCustomConfirmOpen(true) : startPresetExport()}><span aria-hidden="true">✓</span></button></>}
           </div>
         </aside>
       </section>
@@ -192,7 +190,7 @@ export default function PresetPage() {
       <footer className="page-footer"><span>用一點閃耀，創作屬於你的故事 ✧</span><span>小寶石工作室 · 開發預覽版</span></footer>
 
       {isCustomConfirmOpen && <div className="completion-modal-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setIsCustomConfirmOpen(false) }}><section className="completion-modal" role="dialog" aria-modal="true" aria-labelledby="custom-confirm-title"><button type="button" className="completion-modal-close" aria-label="關閉確認視窗" onClick={() => setIsCustomConfirmOpen(false)}>×</button><p className="eyebrow">CUSTOM DESIGN</p><h2 id="custom-confirm-title">前往定製頁？</h2><p className="completion-modal-copy">你將前往定製頁，可以繼續調整寶石頭像。要現在前往嗎？</p><div className="completion-modal-actions"><button type="button" className="wizard-button wizard-button-primary" onClick={continueToEditor}>確認前往</button><button type="button" className="wizard-button wizard-button-secondary" onClick={() => setIsCustomConfirmOpen(false)}>返回選擇</button></div></section></div>}
-      {isExportConfirmOpen && <div className="completion-modal-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setIsExportConfirmOpen(false) }}><section className="completion-modal" role="dialog" aria-modal="true" aria-labelledby="preset-export-title"><button type="button" className="completion-modal-close" aria-label="關閉確認視窗" onClick={() => setIsExportConfirmOpen(false)}>×</button><p className="eyebrow">YOUR GEMSTONE IS READY</p><h2 id="preset-export-title">確認並預覽頭像</h2><p className="completion-modal-copy">將使用已選擇的預設款式及你上載的照片。下一步可預覽並確認下載。</p><div className="completion-modal-actions"><button type="button" className="wizard-button wizard-button-primary" onClick={startPresetExport}>確認</button><button type="button" className="wizard-button wizard-button-secondary" onClick={() => setIsExportConfirmOpen(false)}>返回編輯</button></div></section></div>}
+
     </main>
   )
 }
