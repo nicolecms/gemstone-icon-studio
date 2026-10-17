@@ -10,6 +10,7 @@ import './App.css'
 import HomePage from './pages/HomePage'
 import PresetPage from './pages/PresetPage'
 import { getPresetById, getPresetSelections } from './data/presets'
+import { clearPhotoSession, readPhotoSession, savePhotoSession } from './data/photoSession'
 
 type SelectableLayer = 'jewel' | 'ribbon' | 'character' | 'metal' | 'secondary' | 'primary' | 'pattern'
 type SelectionState = {
@@ -78,7 +79,7 @@ function App() {
   const photoInputRef = useRef<HTMLInputElement>(null)
   const photoObjectUrlRef = useRef<string | null>(null)
   const pendingPhotoUrlRef = useRef<string | null>(null)
-  const [activeStep, setActiveStep] = useState(0)
+  const [activeStep, setActiveStep] = useState(() => new URLSearchParams(window.location.search).get('step') === '1' ? 1 : 0)
   const [categoryTab, setCategoryTab] = useState<Record<number, string>>({ 1: 'jewel', 3: 'primary', 4: 'colour' })
   const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false)
   const [isResetModalOpen, setIsResetModalOpen] = useState(false)
@@ -164,6 +165,31 @@ function App() {
     }
   }, [])
 
+  useEffect(() => {
+    const saved = readPhotoSession()
+    if (!saved || photo.image) return
+    const image = new Image()
+    image.onload = () => {
+      setPhoto({ image, zoom: saved.zoom, rotation: saved.rotation, offsetX: saved.offsetX, offsetY: saved.offsetY })
+      setPhotoFileName(saved.fileName)
+    }
+    image.src = saved.dataUrl
+  }, [])
+
+  useEffect(() => {
+    if (!photo.image) return
+    const image = photo.image
+    let dataUrl = image.src
+    if (!dataUrl.startsWith('data:')) {
+      const tempCanvas = document.createElement('canvas')
+      tempCanvas.width = image.naturalWidth
+      tempCanvas.height = image.naturalHeight
+      tempCanvas.getContext('2d')?.drawImage(image, 0, 0)
+      try { dataUrl = tempCanvas.toDataURL('image/jpeg', 0.88) } catch { return }
+    }
+    savePhotoSession({ dataUrl, fileName: photoFileName, zoom: photo.zoom, rotation: photo.rotation, offsetX: photo.offsetX, offsetY: photo.offsetY })
+  }, [photo, photoFileName])
+
   useEffect(() => () => {
     if (photoObjectUrlRef.current) URL.revokeObjectURL(photoObjectUrlRef.current)
     if (pendingPhotoUrlRef.current) URL.revokeObjectURL(pendingPhotoUrlRef.current)
@@ -211,6 +237,7 @@ function App() {
     pendingPhotoUrlRef.current = null
     setPhoto({ image: null, zoom: 1, rotation: 0, offsetX: 0, offsetY: 0 })
     setPhotoFileName('')
+    clearPhotoSession()
     setPhotoError('')
     setExportError('')
   }
