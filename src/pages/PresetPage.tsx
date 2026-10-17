@@ -75,7 +75,7 @@ export default function PresetPage() {
           <div className="picker-divider" aria-hidden="true" />
           <div className="preset-card-scroll">
             <div className="preset-card-grid" role="listbox" aria-label="選擇預設款式">
-              {gemstonePresets.map((preset) => (
+              {gemstonePresets.map((preset, index) => (
                 <button
                   key={preset.id}
                   type="button"
@@ -86,7 +86,7 @@ export default function PresetPage() {
                   onClick={() => setSelectedId(preset.id)}
                 >
                   <span className="preset-card-art">
-                    <img src="/assets/default-icon.PNG" alt="" loading="lazy" />
+                    <img src={`/assets/presets/preset-${index + 1}.PNG`} alt="" loading="lazy" />
                   </span>
                   <span className="preset-card-name">{preset.name}</span>
                   {preset.birthMonth !== null && <span className="preset-card-month">{preset.birthMonth} 月誕生石</span>}

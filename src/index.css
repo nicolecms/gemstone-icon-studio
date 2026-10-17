@@ -1,7 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap');
+@font-face {
+  font-family: 'FakePearl-Regular';
+  src:
+    url('https://cdn.jsdelivr.net/gh/max32002/FakePearl@1.1/webfont/FakePearl-Regular.woff2') format('woff2'),
+    url('https://cdn.jsdelivr.net/gh/max32002/FakePearl@1.1/webfont/FakePearl-Regular.woff') format('woff');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
 
 :root {
-  font-family: 'DM Sans', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+  font-family: 'FakePearl-Regular', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
   color: #403746;
   background: #fbf8f5;
   font-synthesis: none;
