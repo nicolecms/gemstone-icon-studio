@@ -138,15 +138,15 @@ export default function PresetPage() {
       <a className="back-home-link" href="/"><span aria-hidden="true">‹</span> 返回主頁</a>
 
       <section className={`editor preset-editor ${step === 1 ? 'preset-photo-step' : 'preset-choice-step'}`} aria-label="預設款式選擇工作區">
-        <div className="preview-column preset-preview-column">
+        <div className={'preview-column preset-preview-column ' + (isCustom ? 'is-dimmed' : '')}>
           <div className="section-heading preview-heading"><div><p className="eyebrow">即時預覽</p><h2>你的寶石頭像</h2></div></div>
           <div className="preview-stage canvas-stage preset-preview-stage">
             <PresetCanvas config={previewConfig} className="icon-canvas preset-main-canvas" onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} />
           </div>
         </div>
 
-        <aside className="controls-column preset-controls-column">
-          <div className="mobile-sheet-handle" role="button" tabIndex={0} aria-label={sheetExpanded ? '收起選項面板' : '展開選項面板'} aria-expanded={sheetExpanded} onClick={() => setSheetExpanded(value => !value)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSheetExpanded(value => !value) } }}><span /></div>
+        <aside className={'controls-column preset-controls-column ' + (sheetExpanded ? 'is-expanded' : '')}>
+          <div className="mobile-sheet-handle" role="button" tabIndex={0} aria-label={sheetExpanded ? '收起選項面板' : '展開選項面板'} aria-expanded={sheetExpanded} onPointerDown={event => { setIsDragging(true); dragRef.current = { x: event.clientX, y: event.clientY, offsetX: 0, offsetY: 0 }; event.currentTarget.setPointerCapture(event.pointerId) }} onPointerUp={event => { if (isDragging && dragRef.current && Math.abs(event.clientY - dragRef.current.y) > 20) setSheetExpanded(event.clientY < dragRef.current.y); else setSheetExpanded(value => !value); setIsDragging(false); dragRef.current = null }} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSheetExpanded(value => !value) } }}><span /></div>
           <div className="sidebar-heading">
             <div><p className="eyebrow">{step === 1 ? '自訂你的頭像' : '選擇你的預設款式'}</p><h2>{step === 1 ? '上載及編輯照片' : '選擇設計模板'}</h2></div>
             <span className="step-count">{step}/2</span>
