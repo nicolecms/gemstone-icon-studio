@@ -1042,3 +1042,18 @@
 .preset-preview-caption { display:none !important; }
 .preset-preview-column.is-dimmed .preview-stage { opacity:.28; }
 .preset-preview-column .preview-stage { transition:opacity .2s ease; }
+
+@media (min-width:541px) {
+  .asset-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+}
+@media (min-width:901px) {
+  .preset-card-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .preset-controls-column { display:flex; flex-direction:column; }
+  .preset-card-scroll { flex:1 1 auto; min-height:0; overflow-y:auto; }
+}
+.preset-tick-button { min-width:48px; min-height:42px; font-size:20px; line-height:1; }
+.preset-photo-step .preset-preview-stage { touch-action:pan-y; }
+@media (max-width:540px) {
+  .preset-photo-step .preset-preview-stage { height:min(31dvh,260px); }
+  .preset-photo-step .preset-main-canvas { width:auto; height:100%; max-width:100%; }
+}
