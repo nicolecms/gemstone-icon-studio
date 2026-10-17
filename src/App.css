@@ -981,3 +981,64 @@
   .preset-actions { position:sticky; bottom:0; background:#fffdfb; }
   .preset-actions .wizard-button { padding:10px 8px; font-size:11px; }
 }
+
+
+/* Figma mobile/tablet bottom-sheet layouts */
+.mobile-sheet-handle { display:none; }
+@media (min-width:541px) and (max-width:900px) {
+  .studio { padding:0 24px 24px; }
+  .editor { display:grid; grid-template-columns:minmax(0,1fr); gap:16px; }
+  .preview-column { padding:20px; }
+  .preview-stage.canvas-stage { min-height:0; padding:16px; }
+  .preview-stage .icon-canvas { width:min(100%,300px); }
+  .controls-column { position:fixed; z-index:50; left:24px; right:24px; bottom:0; height:min(58dvh,620px); max-height:calc(100dvh - 24px); min-height:360px; display:flex; flex-direction:column; padding:18px 22px max(14px,env(safe-area-inset-bottom)); border-radius:16px 16px 0 0; box-shadow:0 -8px 28px rgba(83,57,76,.12); }
+  .controls-column .picker-scroll { flex:1 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain; }
+  .controls-column .wizard-navigation { flex:0 0 auto; margin-top:10px; }
+  .asset-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+  .preset-controls-column { height:min(58dvh,620px); min-height:360px; }
+  .preset-card-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+}
+@media (max-width:540px) {
+  .studio { padding:0 12px 18px; }
+  .topbar { min-height:60px; }
+  .back-home-link { margin-top:10px; }
+  .editor { display:block; }
+  .preview-column { padding:12px; border-radius:14px; }
+  .preview-heading h2 { font-size:19px; }
+  .preview-heading .eyebrow { margin-bottom:4px; }
+  .preview-stage.canvas-stage { min-height:0; height:min(34dvh,280px); margin-top:10px; padding:10px; }
+  .preview-stage .icon-canvas { width:auto; height:100%; max-width:100%; object-fit:contain; }
+  .preview-halo { display:none; }
+  .controls-column { position:fixed; z-index:100; left:0; right:0; bottom:0; width:100%; height:420px; max-height:calc(100dvh - 12px); min-height:300px; box-sizing:border-box; display:flex; flex-direction:column; gap:0; overflow:hidden; padding:0 14px max(10px,env(safe-area-inset-bottom)); border-radius:15px 15px 0 0; border-bottom:0; background:rgba(255,253,251,.98); backdrop-filter:blur(12px); box-shadow:0 -7px 24px rgba(83,57,76,.12); }
+  .controls-column.is-expanded, .preset-controls-column.is-expanded { height:min(700px,calc(100dvh - 8px)); }
+  .mobile-sheet-handle { display:flex; flex:0 0 26px; align-items:center; justify-content:center; width:100%; cursor:ns-resize; touch-action:pan-y; }
+  .mobile-sheet-handle span { display:block; width:60px; height:4px; border-radius:9px; background:#d8c5dd; }
+  .sidebar-heading { flex:0 0 auto; padding-top:2px; }
+  .sidebar-heading h2 { font-size:19px; }
+  .sidebar-heading .eyebrow { margin-bottom:5px; }
+  .category-tabs { flex:0 0 auto; margin-top:8px; }
+  .picker-divider { flex:0 0 auto; margin:10px 0 0; }
+  .picker-scroll { flex:1 1 auto; min-height:0; max-height:none; overflow-y:auto; overscroll-behavior:contain; padding:0 4px 8px 0; }
+  .wizard-navigation { flex:0 0 auto; position:static; margin:0 -14px; padding:9px 14px 0; border-top:1px solid var(--line); background:transparent; box-shadow:none; }
+  .wizard-navigation-actions { width:100%; }
+  .wizard-icon-button { width:40px; height:40px; }
+  .asset-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; }
+  .asset-option { padding:5px; }
+  .asset-option-label { font-size:10px; }
+  .photo-tools { padding-bottom:8px; }
+  .photo-upload-section, .photo-edit-section { padding:12px 0; }
+  .page-footer { padding-bottom:430px; }
+  .preset-controls-column { height:420px; min-height:0; }
+  .preset-controls-column.is-expanded { height:min(700px,calc(100dvh - 8px)); }
+  .preset-card-scroll { flex:1 1 auto; min-height:0; max-height:none; overflow-y:auto; }
+  .preset-card-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .preset-card { padding:6px; }
+  .preset-card-name { font-size:11px; }
+  .preset-card-month { font-size:9px; }
+  .preset-actions { flex:0 0 auto; position:static; margin:0 -14px; padding:10px 14px 0; border-top:1px solid var(--line); background:transparent; }
+  .preset-actions .wizard-button { min-height:40px; }
+  .preset-preview-column.is-dimmed .preview-stage { opacity:.28; }
+}
+.preset-preview-caption { display:none !important; }
+.preset-preview-column.is-dimmed .preview-stage { opacity:.28; }
+.preset-preview-column .preview-stage { transition:opacity .2s ease; }
