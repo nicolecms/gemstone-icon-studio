@@ -954,7 +954,7 @@
 .preset-card:hover { border-color:#cdb7d5; }
 .preset-card.is-selected { border-color:#9b7ba8; background:#f8f0fa; box-shadow:0 0 0 1px #d8c3df; }
 .preset-card-art { display:grid; place-items:center; width:100%; aspect-ratio:1; overflow:hidden; border-radius:7px; background:#f7f0f4; }
-.preset-card-canvas { display:block; width:100%; height:100%; object-fit:contain; }
+.preset-card-art img { display:block; width:100%; height:100%; object-fit:contain; }
 .preset-card-name { overflow:hidden; margin-top:7px; font-size:11px; font-weight:600; text-overflow:ellipsis; white-space:nowrap; }
 .preset-card-month { margin-top:3px; color:#9b8c9c; font-size:9px; line-height:1.35; }
 .preset-actions { display:flex; flex:0 0 auto; gap:8px; margin-top:14px; padding-top:14px; border-top:1px solid var(--line); }

@@ -14,8 +14,25 @@ function PresetCanvas({ preset, className = '' }: { preset: GemstonePreset; clas
     const canvas = canvasRef.current
     if (!canvas) return
     let cancelled = false
-    renderIcon(canvas, config, { size: 256, shouldCancel: () => cancelled })
-    return () => { cancelled = true }
+
+    const renderAtDisplayResolution = () => {
+      const { width, height } = canvas.getBoundingClientRect()
+      if (!width || !height) return
+      const pixelRatio = window.devicePixelRatio || 1
+      const size = Math.max(1, Math.round(Math.min(width, height) * pixelRatio))
+      void renderIcon(canvas, config, { size, shouldCancel: () => cancelled })
+    }
+
+    const observer = new ResizeObserver(renderAtDisplayResolution)
+    observer.observe(canvas)
+    window.addEventListener('resize', renderAtDisplayResolution)
+    renderAtDisplayResolution()
+
+    return () => {
+      cancelled = true
+      observer.disconnect()
+      window.removeEventListener('resize', renderAtDisplayResolution)
+    }
   }, [config])
   return <canvas ref={canvasRef} className={className} width={256} height={256} aria-label={preset.name + '預設頭像預覽'} />
 }
@@ -68,7 +85,9 @@ export default function PresetPage() {
                   className={`preset-card ${selected.id === preset.id ? 'is-selected' : ''}`}
                   onClick={() => setSelectedId(preset.id)}
                 >
-                  <span className="preset-card-art"><PresetCanvas preset={preset} className="preset-card-canvas" /></span>
+                  <span className="preset-card-art">
+                    <img src="/assets/default-icon.PNG" alt="" loading="lazy" />
+                  </span>
                   <span className="preset-card-name">{preset.name}</span>
                   {preset.birthMonth !== null && <span className="preset-card-month">{preset.birthMonth} 月誕生石</span>}
                 </button>
