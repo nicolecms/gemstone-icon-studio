@@ -408,24 +408,29 @@ function App() {
           <div className="picker-scroll">
           {activeStep === 0 && (
             <section className="photo-tools" aria-label="照片編輯">
-              <h3>上載及編輯照片</h3>
-              <input ref={photoInputRef} className="photo-file-input" type="file" accept="image/*" onChange={handlePhotoInputChange} />
-              {photo.image ? (
-                <div className="uploaded-photo">
-                  <p className="uploaded-photo-name" title={photoFileName}>{photoFileName}</p>
-                  <div className="photo-actions">
-                    <button type="button" onClick={() => photoInputRef.current?.click()}>更換圖片</button>
-                    <button type="button" onClick={removePhoto}>移除圖片</button>
+              <div className="photo-upload-section">
+                <h3>上載照片</h3>
+                <input ref={photoInputRef} className="photo-file-input" type="file" accept="image/*" onChange={handlePhotoInputChange} />
+                {photo.image ? (
+                  <div className="uploaded-photo">
+                    <p className="uploaded-photo-name" title={photoFileName}>{photoFileName}</p>
+                    <div className="photo-actions">
+                      <button type="button" onClick={() => photoInputRef.current?.click()}>更換圖片</button>
+                      <button type="button" onClick={removePhoto}>移除圖片</button>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <button type="button" className="upload-button" onClick={() => photoInputRef.current?.click()}>選擇圖片</button>
-              )}
-              <p className="photo-help">在預覽上拖曳照片以移動位置。照片會裁切於固定圓形範圍內。</p>
-              <label className="photo-control">縮放 <input type="range" min="1" max="4" step="0.05" value={photo.zoom} onChange={(event) => setPhoto((current) => ({ ...current, zoom: Number(event.target.value) }))} /><span>{photo.zoom.toFixed(2)}×</span></label>
-              <label className="photo-control">旋轉 <input type="range" min="-180" max="180" step="1" value={photo.rotation} onChange={(event) => setPhoto((current) => ({ ...current, rotation: Number(event.target.value) }))} /><span>{photo.rotation}°</span></label>
-              <div className="photo-actions"><button type="button" onClick={fitPhoto}>符合遮罩範圍</button><button type="button" onClick={resetPhoto}>重設照片</button></div>
-              {photoError && <p className="inline-error" role="alert">{photoError}</p>}
+                ) : (
+                  <button type="button" className="upload-button" onClick={() => photoInputRef.current?.click()}>選擇圖片</button>
+                )}
+              </div>
+              <div className="photo-edit-section">
+                <h3>編輯照片</h3>
+                <p className="photo-help">在預覽上拖曳照片以移動位置。照片會裁切於固定圓形範圍內。</p>
+                <label className="photo-control">縮放 <input type="range" min="1" max="4" step="0.05" value={photo.zoom} onChange={(event) => setPhoto((current) => ({ ...current, zoom: Number(event.target.value) }))} /><span>{photo.zoom.toFixed(2)}×</span></label>
+                <label className="photo-control">旋轉 <input type="range" min="-180" max="180" step="1" value={photo.rotation} onChange={(event) => setPhoto((current) => ({ ...current, rotation: Number(event.target.value) }))} /><span>{photo.rotation}°</span></label>
+                <div className="photo-actions"><button type="button" onClick={fitPhoto}>符合遮罩範圍</button><button type="button" onClick={resetPhoto}>重設照片</button></div>
+                {photoError && <p className="inline-error" role="alert">{photoError}</p>}
+              </div>
             </section>
           )}
 
