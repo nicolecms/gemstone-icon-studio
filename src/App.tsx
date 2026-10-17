@@ -80,6 +80,8 @@ function App() {
   const photoObjectUrlRef = useRef<string | null>(null)
   const pendingPhotoUrlRef = useRef<string | null>(null)
   const [activeStep, setActiveStep] = useState(() => new URLSearchParams(window.location.search).get('step') === '1' ? 1 : 0)
+  const [sheetExpanded, setSheetExpanded] = useState(false)
+  const sheetDragStartRef = useRef<number | null>(null)
   const [categoryTab, setCategoryTab] = useState<Record<number, string>>({ 1: 'jewel', 3: 'primary', 4: 'colour' })
   const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false)
   const [isResetModalOpen, setIsResetModalOpen] = useState(false)
@@ -423,7 +425,8 @@ function App() {
 
         </div>
 
-        <aside className="controls-column" ref={controlsColumnRef}>
+        <aside className={`controls-column ${sheetExpanded ? 'is-expanded' : ''}`} ref={controlsColumnRef}>
+          <div className="mobile-sheet-handle" role="button" tabIndex={0} aria-label={sheetExpanded ? '收起選項面板' : '展開選項面板'} aria-expanded={sheetExpanded} onPointerDown={event => { sheetDragStartRef.current = event.clientY; event.currentTarget.setPointerCapture(event.pointerId) }} onPointerUp={event => { const start = sheetDragStartRef.current; if (start !== null && Math.abs(event.clientY - start) > 20) setSheetExpanded(event.clientY < start); else setSheetExpanded(value => !value); sheetDragStartRef.current = null }} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSheetExpanded(value => !value) } }}><span /></div>
           <div className="sidebar-heading">
             <div><p className="eyebrow">自訂你的頭像</p><h2>{wizardStepTitles[activeStep]}</h2>
               {activeStep === 4 && <p className="sidebar-instruction">可分別隱藏背景顏色或圖案，打造透明或簡約背景</p>}
