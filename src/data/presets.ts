@@ -23,7 +23,7 @@ export const gemstonePresets: GemstonePreset[] = [
   { id: 'pearl', name: '珍珠', birthMonth: 6, jewel: '珍珠', ribbon: '珍珠', character: 'Miss Bunny', primary: '珍珠', secondary: '白色', metal: '金', colour: '#E0D2BE', pattern: '菱格' },
   { id: 'ruby', name: '紅寶石', birthMonth: 7, jewel: '紅寶石', ribbon: '紅寶石', character: '大紫眼', primary: '紅寶石', secondary: '白色', metal: '銀', colour: '#F4D9D7', pattern: '波點' },
   { id: 'peridot', name: '橄欖石', birthMonth: 8, jewel: '橄欖石', ribbon: '橄欖石', character: '灰藍B', primary: '橄欖石', secondary: '黑色', metal: '銀', colour: '#CDDBB0', pattern: '菱格' },
-  { id: 'sapphire', name: '藍寶石', birthMonth: 9, jewel: '藍寶石', ribbon: '藍寶石', character: '藍企企', primary: '藍寶石', secondary: '黑色', metal: '銀', colour: '#C5D3EA', pattern: '波點' },
+  { id: 'sapphire', name: '藍寶石', birthMonth: 9, jewel: '藍寶石', ribbon: '藍寶石', character: '藍企企', primary: '藍寶石', secondary: '白色', metal: '金', colour: '#C5D3EA', pattern: '波點' },
   { id: 'opal', name: '蛋白石', birthMonth: 10, jewel: '蛋白石', ribbon: '蛋白石', character: '鍾明B', primary: '蛋白石', secondary: '白色', metal: '金', colour: '#D7D1DF', pattern: '菱格' },
   { id: 'citrine', name: '黃水晶', birthMonth: 11, jewel: '黃水晶', ribbon: '黃水晶', character: 'Miss Bunny', primary: '黃水晶', secondary: '白色', metal: '銅', colour: '#F8E3AF', pattern: '波點' },
   { id: 'turquoise', name: '綠松石', birthMonth: 12, jewel: '綠松石', ribbon: '綠松石', character: '熊熊', primary: '綠松石', secondary: '黑色', metal: '銅', colour: '#A5D6D3', pattern: '菱格' },
